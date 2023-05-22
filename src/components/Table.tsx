@@ -73,7 +73,7 @@ export default function Table() {
     // console.log(upbitTableData);
   }, []);
 
-  //바이낸스 데이터 로드 함수
+  //바이낸스 데이터 로드
   useEffect(() => {
     const fetchBinanceData = async () => {
       try {
