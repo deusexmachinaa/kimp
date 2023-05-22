@@ -11,7 +11,7 @@ export default function Table() {
   );
   const [sortBy, setSortBy] = useState("");
   const [order, setOrder] = useState(true);
-  const sorted = useRef(false);
+  const sortedRef = useRef(false);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -121,7 +121,7 @@ export default function Table() {
                 });
               }, 1000);
 
-              if (!sorted.current) {
+              if (!sortedRef.current) {
                 const itemToUpdate = updatedData.splice(indexToUpdate, 1)[0];
                 updatedData.unshift(itemToUpdate);
               }
@@ -142,39 +142,33 @@ export default function Table() {
 
   // 정렬 기능
   const sortData = (field: keyof tableData) => {
+    let newOrder = order;
+
     if (sortBy === field) {
-      setOrder(!order);
-      setUpbitTableData((prev) =>
-        [...prev].sort((a, b) => {
-          if (typeof a[field] === "number" && typeof b[field] === "number") {
-            return order
-              ? (a[field] as number) - (b[field] as number)
-              : (b[field] as number) - (a[field] as number);
-          }
-          if (typeof a[field] === "string" && typeof b[field] === "string") {
-            return order
-              ? (a[field] as string).localeCompare(b[field] as string)
-              : (b[field] as string).localeCompare(a[field] as string);
-          }
-          return 0;
-        })
-      );
+      newOrder = !order;
+      setOrder(newOrder);
     } else {
       setSortBy(field);
       setOrder(true);
-      setUpbitTableData((prev) =>
-        [...prev].sort((a, b) => {
-          if (typeof a[field] === "number" && typeof b[field] === "number") {
-            return (a[field] as number) - (b[field] as number);
-          }
-          if (typeof a[field] === "string" && typeof b[field] === "string") {
-            return (a[field] as string).localeCompare(b[field] as string);
-          }
-          return 0;
-        })
-      );
+      newOrder = true;
     }
-    sorted.current = true;
+
+    setUpbitTableData((prev) =>
+      [...prev].sort((a, b) => {
+        if (typeof a[field] === "number" && typeof b[field] === "number") {
+          return newOrder
+            ? (a[field] as number) - (b[field] as number)
+            : (b[field] as number) - (a[field] as number);
+        }
+        if (typeof a[field] === "string" && typeof b[field] === "string") {
+          return newOrder
+            ? (a[field] as string).localeCompare(b[field] as string)
+            : (b[field] as string).localeCompare(a[field] as string);
+        }
+        return 0;
+      })
+    );
+    sortedRef.current = true;
   };
 
   //주의 마크 span
@@ -187,7 +181,7 @@ export default function Table() {
       <thead className="text-xs">
         <tr className="text-right border-b border-b-gray-500 dark:border-b-neutral-700 [&>th]:text-neutral-500">
           <th
-            className="py-2 cursor-pointer text-left text-neutral-400 dark:text-neutral-400"
+            className="py-2 cursor-pointer text-left text-neutral-400 dark:text-neutral-400 select-none"
             onClick={() => sortData("name")}
           >
             이름
@@ -197,7 +191,7 @@ export default function Table() {
             </span>
           </th>
           <th
-            className="py-2 cursor-pointer text-right text-neutral-400 dark:text-neutral-400"
+            className="py-2 cursor-pointer text-right text-neutral-400 dark:text-neutral-400 select-none"
             onClick={() => sortData("currentPrice")}
           >
             현재가(KRW)
@@ -206,7 +200,7 @@ export default function Table() {
               <i className="absolute -bottom-[2px] fa-solid fa-caret-down text-neutral-400 dark:text-neutral-400 "></i>
             </span>
           </th>
-          <th className="py-2 cursor-pointer text-right !text-black dark:!text-white">
+          <th className="py-2 cursor-pointer text-right !text-black dark:!text-white select-none">
             김프
             <span className="ml-1 text-[10px] relative">
               <i className="absolute -top-[2px] fa-solid fa-caret-up text-neutral-400 dark:text-neutral-400"></i>
@@ -214,7 +208,7 @@ export default function Table() {
             </span>
           </th>
           <th
-            className="py-2 cursor-pointer text-right text-neutral-400 dark:text-neutral-400"
+            className="py-2 cursor-pointer text-right text-neutral-400 dark:text-neutral-400 select-none"
             onClick={() => sortData("signed_change_rate")}
           >
             전일 대비
@@ -224,7 +218,7 @@ export default function Table() {
             </span>
           </th>
           <th
-            className="py-2 cursor-pointer text-right text-neutral-400 dark:text-neutral-400"
+            className="py-2 cursor-pointer text-right text-neutral-400 dark:text-neutral-400 select-none"
             onClick={() => sortData("tradeVolume")}
           >
             거래액(일)
