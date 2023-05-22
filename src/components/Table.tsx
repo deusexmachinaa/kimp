@@ -24,8 +24,8 @@ export default function Table() {
   const [search, setSearch] = useState("");
   const exchangeRate = useStore((state) => state.exchangeRate);
 
+  // 초기 데이터 로드
   useEffect(() => {
-    // 초기 데이터 로드
     const fetchData = async () => {
       try {
         const response1 = await fetch("https://api.upbit.com/v1/market/all");
@@ -33,7 +33,6 @@ export default function Table() {
         const krwMarkets = fetchedData1.filter((marketData: MarketData) =>
           marketData.market.startsWith("KRW-")
         );
-        setMarket((prev) => krwMarkets);
         // console.log(krwMarkets);
 
         // 첫 번째 fetch가 완료된 후에 실행됩니다.
@@ -64,6 +63,7 @@ export default function Table() {
         // console.log(tableDataArr);
 
         setTableData(tableDataArr);
+        setMarket((prev) => krwMarkets);
       } catch (error) {
         console.error(error);
       }
@@ -73,15 +73,15 @@ export default function Table() {
     // console.log(upbitTableData);
   }, []);
 
-  //바이낸스 데이터 로드
+  //바이낸스 데이터 로드 함수
   useEffect(() => {
     const fetchBinanceData = async () => {
       try {
         const response = await fetch(
           "https://api.binance.com/api/v3/ticker/24hr"
         );
+        console.log("fetchBinanceData");
         const allData: BinancePriceData[] = await response.json();
-
         const binanceData = tableData
           .map((item) => {
             const data = allData.find(
@@ -108,8 +108,9 @@ export default function Table() {
               item.binancePrice = Number(binanceItem.lastPrice);
               item.binanceVolume = Number(binanceItem.quoteVolume);
               item.KimchiPremium =
-                item.binancePrice !== 0
-                  ? (item.currentPrice / (item.binancePrice * exchangeRate) -
+                Number(binanceItem.lastPrice) !== 0
+                  ? (item.currentPrice /
+                      (Number(binanceItem.lastPrice) * exchangeRate) -
                       1) *
                     100
                   : undefined;
@@ -123,7 +124,6 @@ export default function Table() {
         console.error(error);
       }
     };
-
     fetchBinanceData();
   }, [market]);
 
