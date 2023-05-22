@@ -1,13 +1,22 @@
 "use client";
-import { ApiResponseType, MarketData, tableData } from "@/app/types";
+import {
+  ApiResponseType,
+  BinancePriceData,
+  BinanceResponseData,
+  MarketData,
+  tableData,
+} from "@/app/types";
 import { useEffect, useRef, useState } from "react";
 
 export default function Table() {
   const [showSpan, setShowSpan] = useState(false);
   const [market, setMarket] = useState<MarketData[]>([]);
-  const [upbitTableData, setUpbitTableData] = useState<tableData[]>([]);
+  const [tableData, setTableData] = useState<tableData[]>([]);
+  const [binancePriceData, setBinancePriceData] = useState<BinancePriceData[]>(
+    []
+  );
   const [priceUpdated, setPriceUpdated] = useState(
-    Array(upbitTableData.length).fill(false)
+    Array(tableData.length).fill(false)
   );
   const [sortBy, setSortBy] = useState("");
   const [order, setOrder] = useState(true);
@@ -53,7 +62,7 @@ export default function Table() {
         });
         // console.log(tableDataArr);
 
-        setUpbitTableData(tableDataArr);
+        setTableData(tableDataArr);
       } catch (error) {
         console.error(error);
       }
@@ -63,6 +72,56 @@ export default function Table() {
     // console.log(upbitTableData);
   }, []);
 
+  //바이낸스 데이터 로드
+  useEffect(() => {
+    const fetchBinanceData = async () => {
+      try {
+        const response = await fetch(
+          "https://api.binance.com/api/v3/ticker/24hr"
+        );
+        const allData: BinancePriceData[] = await response.json();
+
+        const binanceData = tableData
+          .map((item) => {
+            const data = allData.find(
+              (data) => data.symbol === `${item.code}USDT`
+            );
+            if (data) {
+              const symbol = item.code;
+              const lastPrice = data.lastPrice;
+              const quoteVolume = data.quoteVolume;
+              return { symbol, lastPrice, quoteVolume };
+            }
+          })
+          .filter((item): item is BinancePriceData => Boolean(item));
+
+        setTableData((prevData) => {
+          const updatedData = [...prevData];
+
+          updatedData.forEach((item) => {
+            const binanceItem = binanceData.find(
+              (data) => data.symbol === item.code
+            );
+
+            if (binanceItem) {
+              item.binancePrice = Number(binanceItem.lastPrice);
+              item.binanceVolume = Number(binanceItem.quoteVolume);
+            }
+          });
+
+          return updatedData;
+        });
+        setBinancePriceData(binanceData);
+        console.log(binanceData);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchBinanceData();
+  }, [market]);
+
+  //업비트 웹소켓//
   useEffect(() => {
     // WebSocket 연결 및 실시간 업데이트
     const socket = new WebSocket("wss://api.upbit.com/websocket/v1");
@@ -86,7 +145,7 @@ export default function Table() {
       reader.onload = () => {
         const newData = JSON.parse(reader.result as string);
 
-        setUpbitTableData((prevData) => {
+        setTableData((prevData) => {
           const updatedData = [...prevData];
           const indexToUpdate = updatedData.findIndex(
             (data) => "KRW-" + data.code === newData.code
@@ -153,7 +212,7 @@ export default function Table() {
       newOrder = true;
     }
 
-    setUpbitTableData((prev) =>
+    setTableData((prev) =>
       [...prev].sort((a, b) => {
         if (typeof a[field] === "number" && typeof b[field] === "number") {
           return newOrder
@@ -170,6 +229,73 @@ export default function Table() {
     );
     sortedRef.current = true;
   };
+
+  /*
+{
+  "e": "24hrTicker",  // 이벤트 유형
+  "E": 123456789,     // 이벤트 시간
+  "s": "BNBBTC",      // 심볼
+  "p": "0.0015",      // 가격 변화
+  "P": "250.00",      // 가격 변화율(%)
+  "w": "0.0018",      // 가중평균 가격
+  "x": "0.0009",      // 첫 거래 가격
+  "c": "0.0025",      // 마지막 거래 가격
+  "Q": "10",          // 마지막 거래 수량
+  "b": "0.0024",      // 최고 구매가
+  "B": "10",          // 최고 구매가에 대한 수량
+  "a": "0.0026",      // 최저 판매가
+  "A": "100",         // 최저 판매가에 대한 수량
+  "o": "0.0010",      // 시가
+  "h": "0.0025",      // 고가
+  "l": "0.0010",      // 저가
+  "v": "10000",       // 거래량
+  "q": "18",          // 총 거래 가격
+  "O": 123456789,     // 통계 시작 시간
+  "C": 123456789,     // 통계 종료 시간
+  "F": 100,           // 첫 거래 번호
+  "L": 200,           // 마지막 거래 번호
+  "n": 100            // 거래 수
+}
+*/
+  //바이낸스 웹소켓//
+  useEffect(() => {
+    // WebSocket 연결 및 실시간 업데이트
+    const binanceSockets: WebSocket[] = [];
+
+    // 각 티커에 대한 웹소켓 연결을 생성합니다.
+    tableData.forEach((item) => {
+      const binanceSocket = new WebSocket(
+        `wss://stream.binance.com:9443/ws/${item.code.toLowerCase()}usdt@trade`
+      );
+
+      binanceSocket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        const binancePrice = Number(data.p); // last trade price
+        const binanceVolume = Number(data.q); // last trade quantity
+
+        // Update the binancePrice and binanceVolume properties of the relevant item in tableData
+        setTableData((prevData) => {
+          const updatedData = [...prevData];
+          const itemToUpdate = updatedData.find(
+            (item) => item.code + "USDT" === data.s.toUpperCase()
+          );
+
+          if (itemToUpdate) {
+            itemToUpdate.binancePrice = binancePrice;
+            // itemToUpdate.binanceVolume = binanceVolume;
+          }
+
+          return updatedData;
+        });
+      };
+
+      binanceSockets.push(binanceSocket);
+    });
+    return () => {
+      binanceSockets.forEach((socket) => socket.close());
+      console.log("binance sockets closed");
+    };
+  }, [market]);
 
   //주의 마크 span
   const toggleSpan = () => {
@@ -230,7 +356,7 @@ export default function Table() {
         </tr>
       </thead>
       <tbody>
-        {upbitTableData.map((data, index) => (
+        {tableData.map((data, index) => (
           <tr
             key={index}
             className="text-right border-b-gray-200 border-b tracking-tight [&>td]:py-1 dark:border-b-neutral-700"
@@ -272,11 +398,19 @@ export default function Table() {
                 {data.currentPrice.toLocaleString()}
               </p>
               <p className="text-gray-500 transition-opacity dark:text-gray-400">
-                {/* 여기에 이전 가격 또는 다른 정보를 넣을 수 있습니다. */}
+                {data.binancePrice
+                  ? (data.binancePrice * 1318).toLocaleString()
+                  : "-"}
               </p>
             </td>
             <td className="text-teal-700 dark:text-teal-600">
-              {/* 김프 정보를 제공하는 API 또는 알고리즘이 필요합니다. */}
+              {/* 김프 */}
+              {data.binancePrice
+                ? (
+                    (data.currentPrice / (data.binancePrice * 1318) - 1) *
+                    100
+                  ).toFixed(2) + "%"
+                : "-"}
             </td>
             <td
               className={
@@ -292,7 +426,10 @@ export default function Table() {
                 {(data.tradeVolume / 100000000).toFixed(2)}억
               </p>
               <p className="text-gray-500 transition-opacity dark:text-gray-400">
-                {/* 여기에 이전 거래량 또는 다른 정보를 넣을 수 있습니다. */}
+                {data.binanceVolume
+                  ? ((data.binanceVolume / 100000000) * 1318).toLocaleString() +
+                    "억"
+                  : "-"}
               </p>
             </td>
           </tr>

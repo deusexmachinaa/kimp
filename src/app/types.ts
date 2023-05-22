@@ -9,6 +9,8 @@ export type tableData = {
   currentPrice: number; //현재가
   signed_change_rate: number; //전일대비
   tradeVolume: number; // 거래량
+  binancePrice?: number; //바이낸스 가격
+  binanceVolume?: number; //바이낸스 거래량
 };
 
 export type ApiResponseType = {
@@ -38,4 +40,32 @@ export type ApiResponseType = {
   lowest_52_week_price: number;
   lowest_52_week_date: string;
   timestamp: number;
+};
+export type BinanceResponseData = {
+  symbol: string;
+  priceChange: string;
+  priceChangePercent: string;
+  weightedAvgPrice: string;
+  prevClosePrice: string;
+  lastPrice: string;
+  lastQty: string;
+  bidPrice: string;
+  bidQty: string;
+  askPrice: string;
+  askQty: string;
+  openPrice: string;
+  highPrice: string;
+  lowPrice: string;
+  volume: string;
+  quoteVolume: string;
+  openTime: number;
+  closeTime: number;
+  firstId: number;
+  lastId: number;
+  count: number;
+};
+export type BinancePriceData = {
+  symbol: string;
+  lastPrice: string;
+  quoteVolume: string;
 };
