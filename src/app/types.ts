@@ -11,6 +11,7 @@ export type tableData = {
   tradeVolume: number; // 거래량
   binancePrice?: number; //바이낸스 가격
   binanceVolume?: number; //바이낸스 거래량
+  KimchiPremium?: number; //프리미엄
 };
 
 export type ApiResponseType = {

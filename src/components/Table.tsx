@@ -2,11 +2,11 @@
 import {
   ApiResponseType,
   BinancePriceData,
-  BinanceResponseData,
   MarketData,
   tableData,
 } from "@/app/types";
 import { useEffect, useRef, useState } from "react";
+import { useStore } from "./Header";
 
 export default function Table() {
   const [showSpan, setShowSpan] = useState(false);
@@ -22,6 +22,7 @@ export default function Table() {
   const [order, setOrder] = useState(true);
   const sortedRef = useRef(false);
   const [search, setSearch] = useState("");
+  const exchangeRate = useStore((state) => state.exchangeRate);
 
   useEffect(() => {
     // 초기 데이터 로드
@@ -106,13 +107,18 @@ export default function Table() {
             if (binanceItem) {
               item.binancePrice = Number(binanceItem.lastPrice);
               item.binanceVolume = Number(binanceItem.quoteVolume);
+              item.KimchiPremium =
+                item.binancePrice !== 0
+                  ? (item.currentPrice / (item.binancePrice * exchangeRate) -
+                      1) *
+                    100
+                  : undefined;
             }
           });
 
           return updatedData;
         });
         setBinancePriceData(binanceData);
-        console.log(binanceData);
       } catch (error) {
         console.error(error);
       }
@@ -161,6 +167,12 @@ export default function Table() {
               currentPrice: newData.trade_price,
               signed_change_rate: newData.signed_change_rate,
               tradeVolume: newData.acc_trade_price_24h,
+              KimchiPremium: updatedData[indexToUpdate].binancePrice
+                ? (newData.trade_price /
+                    (updatedData[indexToUpdate].binancePrice! * exchangeRate) -
+                    1) *
+                  100
+                : undefined,
             };
 
             if (priceHasUpdated) {
@@ -201,6 +213,8 @@ export default function Table() {
 
   // 정렬 기능
   const sortData = (field: keyof tableData) => {
+    console.log("sorting");
+
     let newOrder = order;
 
     if (sortBy === field) {
@@ -214,19 +228,39 @@ export default function Table() {
 
     setTableData((prev) =>
       [...prev].sort((a, b) => {
-        if (typeof a[field] === "number" && typeof b[field] === "number") {
-          return newOrder
-            ? (a[field] as number) - (b[field] as number)
-            : (b[field] as number) - (a[field] as number);
+        const aValue = a[field];
+        const bValue = b[field];
+
+        // Check for "KimchiPremium"
+        if (field === "KimchiPremium") {
+          const aIsInvalid =
+            aValue === undefined ||
+            (typeof aValue === "number" && isNaN(aValue));
+          const bIsInvalid =
+            bValue === undefined ||
+            (typeof bValue === "number" && isNaN(bValue));
+
+          if (aIsInvalid && bIsInvalid) return 0;
+          if (aIsInvalid) return 1;
+          if (bIsInvalid) return -1;
         }
-        if (typeof a[field] === "string" && typeof b[field] === "string") {
-          return newOrder
-            ? (a[field] as string).localeCompare(b[field] as string)
-            : (b[field] as string).localeCompare(a[field] as string);
+
+        // Handle numbers
+        if (typeof aValue === "number" && typeof bValue === "number") {
+          return newOrder ? aValue - bValue : bValue - aValue;
         }
+
+        // Handle strings
+        if (typeof aValue === "string" && typeof bValue === "string") {
+          return newOrder
+            ? aValue.localeCompare(bValue)
+            : bValue.localeCompare(aValue);
+        }
+
         return 0;
       })
     );
+
     sortedRef.current = true;
   };
 
@@ -282,6 +316,10 @@ export default function Table() {
 
           if (itemToUpdate) {
             itemToUpdate.binancePrice = binancePrice;
+            itemToUpdate.KimchiPremium =
+              (itemToUpdate.currentPrice / (binancePrice * exchangeRate) - 1) *
+              100;
+
             // itemToUpdate.binanceVolume = binanceVolume;
           }
 
@@ -326,7 +364,10 @@ export default function Table() {
               <i className="absolute -bottom-[2px] fa-solid fa-caret-down text-neutral-400 dark:text-neutral-400 "></i>
             </span>
           </th>
-          <th className="py-2 cursor-pointer text-right !text-black dark:!text-white select-none">
+          <th
+            className="py-2 cursor-pointer text-right !text-black dark:!text-white select-none"
+            onClick={() => sortData("KimchiPremium")}
+          >
             김프
             <span className="ml-1 text-[10px] relative">
               <i className="absolute -top-[2px] fa-solid fa-caret-up text-neutral-400 dark:text-neutral-400"></i>
@@ -399,18 +440,13 @@ export default function Table() {
               </p>
               <p className="text-gray-500 transition-opacity dark:text-gray-400">
                 {data.binancePrice
-                  ? (data.binancePrice * 1318).toLocaleString()
+                  ? (data.binancePrice * exchangeRate).toLocaleString()
                   : "-"}
               </p>
             </td>
             <td className="text-teal-700 dark:text-teal-600">
               {/* 김프 */}
-              {data.binancePrice
-                ? (
-                    (data.currentPrice / (data.binancePrice * 1318) - 1) *
-                    100
-                  ).toFixed(2) + "%"
-                : "-"}
+              {data.KimchiPremium ? data.KimchiPremium.toFixed(2) + "%" : "-"}
             </td>
             <td
               className={
