@@ -1,6 +1,6 @@
 "use client";
 import { ApiResponseType, MarketData, tableData } from "@/app/types";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Table() {
   const [showSpan, setShowSpan] = useState(false);
@@ -11,7 +11,7 @@ export default function Table() {
   );
   const [sortBy, setSortBy] = useState("");
   const [order, setOrder] = useState(true);
-  const [sorted, setSorted] = useState(false);
+  const sorted = useRef(false);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function Table() {
             tableDataArr.push(newData);
           }
         });
-        console.log(tableDataArr);
+        // console.log(tableDataArr);
 
         setUpbitTableData(tableDataArr);
       } catch (error) {
@@ -121,11 +121,10 @@ export default function Table() {
                 });
               }, 1000);
 
-              if (!sorted) {
+              if (!sorted.current) {
                 const itemToUpdate = updatedData.splice(indexToUpdate, 1)[0];
                 updatedData.unshift(itemToUpdate);
               }
-              console.log(sorted);
             }
           }
 
@@ -143,7 +142,6 @@ export default function Table() {
 
   // 정렬 기능
   const sortData = (field: keyof tableData) => {
-    setSorted(true);
     if (sortBy === field) {
       setOrder(!order);
       setUpbitTableData((prev) =>
@@ -176,6 +174,7 @@ export default function Table() {
         })
       );
     }
+    sorted.current = true;
   };
 
   //주의 마크 span
