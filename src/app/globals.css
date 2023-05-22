@@ -45,3 +45,19 @@ body {
 .bubble:hover {
   scale: 1.1;
 }
+
+@keyframes updated {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: yellow;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.updated {
+  animation: updated 1s;
+}

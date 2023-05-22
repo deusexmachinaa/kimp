@@ -3,8 +3,8 @@ import React from "react";
 
 export default function Market() {
   return (
-    <>
-      <div className="flex items-center justify-center gap-10 text-center sm:w-1/2 sm:m-auto">
+    <div className="sm:flex sm:items-center sm:justify-between">
+      <div className="relative flex items-center justify-between gap-10 mb-4 text-center sm:mb-0">
         <div className="relative w-full text-sm rounded-md dark:bg-neutral-800">
           <button className="w-full px-1 py-3 border border-gray-200 rounded-md dark:border-neutral-700 [&>*]:justify-center">
             <div className="flex items-center h-5 gap-2">
@@ -34,16 +34,16 @@ export default function Market() {
             </li>
           </ul>
         </div>
-        <i className="absolute text-xs fa-solid fa-right-left"></i>
+        <i className="absolute text-xs -translate-x-1/2 fa-solid fa-right-left left-1/2"></i>
         <div className="relative w-full text-sm rounded-md dark:bg-neutral-800">
-          <button className="w-full px-1 py-3 border border-gray-200 rounded-md dark:border-neutral-700 [&>*]:justify-center">
+          <button className="w-full px-4 py-3 border border-gray-200 rounded-md dark:border-neutral-700 [&>*]:justify-center">
             <div className="flex items-center h-5 gap-2">
               {/* <img alt="binance usdt" fetchpriority="high" width="20" height="20" decoding="async" data-nimg="1" style="color:transparent" srcset="/_next/image?url=%2Fimages%2Fbinance.webp&amp;w=32&amp;q=75 1x, /_next/image?url=%2Fimages%2Fbinance.webp&amp;w=48&amp;q=75 2x" src="/_next/image?url=%2Fimages%2Fbinance.webp&amp;w=48&amp;q=75"> */}
               <span className="text-xs">바이낸스 USDT</span>
             </div>
           </button>
-          <ul className="dark:bg-neutral-800 dark:border-neutral-700 flex flex-col gap-1 border border-gray-200 rounded-md mt-1 p-1 absolute bg-white w-full z-10 hidden">
-            <li className="px-1 py-3 rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-neutral-700 relative flex items-center justify-center bg-gray-200 dark:bg-neutral-700">
+          <ul className="dark:bg-neutral-800 dark:border-neutral-700 flex flex-col gap-1 border border-gray-200 rounded-md mt-1 p-2 absolute bg-white w-full z-10 hidden">
+            <li className="px-4 py-3 rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-neutral-700 relative flex items-center justify-center bg-gray-200 dark:bg-neutral-700">
               <i className="absolute text-xs left-2 fa-solid fa-check"></i>
               <div className="flex items-center h-5 gap-2">
                 {/* <img alt="binance usdt" fetchpriority="high" width="20" height="20" decoding="async" data-nimg="1" style="color:transparent" srcset="/_next/image?url=%2Fimages%2Fbinance.webp&amp;w=32&amp;q=75 1x, /_next/image?url=%2Fimages%2Fbinance.webp&amp;w=48&amp;q=75 2x" src="/_next/image?url=%2Fimages%2Fbinance.webp&amp;w=48&amp;q=75"> */}
@@ -59,7 +59,7 @@ export default function Market() {
           </ul>
         </div>
       </div>
-      <div className="mt-4 text-right">
+      <div className="my-4 text-right">
         <div className="relative inline-block">
           <i className="absolute -translate-y-1/2 top-1/2 fa-solid fa-magnifying-glass left-2"></i>
           <input
@@ -69,6 +69,6 @@ export default function Market() {
           />
         </div>
       </div>
-    </>
+    </div>
   );
 }

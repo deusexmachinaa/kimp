@@ -1,53 +1,18 @@
 "use client";
-import Image from "next/image";
+import { ApiResponseType, MarketData, tableData } from "@/app/types";
 import { useEffect, useState } from "react";
 
 export default function Table() {
   const [showSpan, setShowSpan] = useState(false);
   const [market, setMarket] = useState<MarketData[]>([]);
-  const [tableData, setTableData] = useState<tableData[]>([]);
-
-  type MarketData = {
-    market: string;
-    korean_name: string;
-    english_name: string;
-  };
-  type tableData = {
-    name: string; //한국이름
-    code: string; //코드
-    currentPrice: number; //현재가
-    prev_closing_price: number; //이전 종가
-    tradeVolume: number; // 거래량
-  };
-
-  type ApiResponseType = {
-    market: string;
-    trade_date: string;
-    trade_time: string;
-    trade_date_kst: string;
-    trade_time_kst: string;
-    trade_timestamp: number;
-    opening_price: number;
-    high_price: number;
-    low_price: number;
-    trade_price: number;
-    prev_closing_price: number;
-    change: string;
-    change_price: number;
-    change_rate: number;
-    signed_change_price: number;
-    signed_change_rate: number;
-    trade_volume: number;
-    acc_trade_price: number;
-    acc_trade_price_24h: number;
-    acc_trade_volume: number;
-    acc_trade_volume_24h: number;
-    highest_52_week_price: number;
-    highest_52_week_date: string;
-    lowest_52_week_price: number;
-    lowest_52_week_date: string;
-    timestamp: number;
-  };
+  const [upbitTableData, setUpbitTableData] = useState<tableData[]>([]);
+  const [priceUpdated, setPriceUpdated] = useState(
+    Array(upbitTableData.length).fill(false)
+  );
+  const [sortBy, setSortBy] = useState("");
+  const [order, setOrder] = useState(true);
+  const [sorted, setSorted] = useState(false);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     // 초기 데이터 로드
@@ -59,7 +24,7 @@ export default function Table() {
           marketData.market.startsWith("KRW-")
         );
         setMarket((prev) => krwMarkets);
-        console.log(krwMarkets);
+        // console.log(krwMarkets);
 
         // 첫 번째 fetch가 완료된 후에 실행됩니다.
         const query = krwMarkets.map((item: MarketData) => item.market);
@@ -79,7 +44,7 @@ export default function Table() {
               name: marketData.korean_name,
               code: data.market.split("-")[1],
               currentPrice: data.trade_price,
-              prev_closing_price: data.prev_closing_price,
+              signed_change_rate: data.signed_change_rate,
               tradeVolume: data.acc_trade_price_24h,
             };
 
@@ -88,74 +53,153 @@ export default function Table() {
         });
         console.log(tableDataArr);
 
-        setTableData(tableDataArr);
+        setUpbitTableData(tableDataArr);
       } catch (error) {
         console.error(error);
       }
     };
 
     fetchData();
-    console.log(tableData);
+    // console.log(upbitTableData);
   }, []);
 
-  // useEffect(() => {
-  //   // WebSocket 연결 및 실시간 업데이트
-  //   const socket = new WebSocket("wss://api.upbit.com/websocket/v1");
+  useEffect(() => {
+    // WebSocket 연결 및 실시간 업데이트
+    const socket = new WebSocket("wss://api.upbit.com/websocket/v1");
 
-  //   socket.onopen = () => {
-  //     // 업데이트를 원하는 티커들의 코드를 배열로 전달합니다.
-  //     socket.send(
-  //       JSON.stringify([
-  //         { ticket: "unique_ticket" },
-  //         {
-  //           type: "ticker",
-  //           codes: market.map((item) => item.market),
-  //           isOnlyRealtime: true,
-  //         },
-  //       ])
-  //     );
-  //   };
+    socket.onopen = () => {
+      // 업데이트를 원하는 티커들의 코드를 배열로 전달합니다.
+      socket.send(
+        JSON.stringify([
+          { ticket: "unique_ticket" },
+          {
+            type: "ticker",
+            codes: market.map((item) => item.market),
+            isOnlyRealtime: true,
+          },
+        ])
+      );
+    };
 
-  //   socket.onmessage = (event) => {
-  //     const reader = new FileReader();
+    socket.onmessage = (event) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const newData = JSON.parse(reader.result as string);
 
-  //     reader.onload = () => {
-  //       const newData = JSON.parse(reader.result as string);
+        setUpbitTableData((prevData) => {
+          const updatedData = [...prevData];
+          const indexToUpdate = updatedData.findIndex(
+            (data) => "KRW-" + data.code === newData.code
+          );
 
-  //       // setData((prevData) => {
-  //       //   const updatedData = [...prevData]; // 이전 데이터를 복사
+          if (indexToUpdate !== -1) {
+            // Check if price has updated
+            const priceHasUpdated =
+              updatedData[indexToUpdate].currentPrice !== newData.trade_price;
 
-  //       //   // newData에 따라 updatedData를 업데이트하는 로직을 작성해야 합니다.
-  //       //   // newData의 'code' 필드를 사용하여 updatedData에서 해당 티커를 찾고, 찾은 티커의 정보를 newData로 업데이트하면 됩니다.
+            updatedData[indexToUpdate] = {
+              ...updatedData[indexToUpdate],
+              currentPrice: newData.trade_price,
+              signed_change_rate: newData.signed_change_rate,
+              tradeVolume: newData.acc_trade_price_24h,
+            };
 
-  //       //   return updatedData; // 업데이트된 데이터를 state로 설정
-  //       // });
-  //     };
+            if (priceHasUpdated) {
+              // Set the priceUpdated state for this item to true
+              setPriceUpdated((prev) => {
+                const newPriceUpdated = [...prev];
+                newPriceUpdated[indexToUpdate] = true;
+                return newPriceUpdated;
+              });
 
-  //     reader.readAsText(event.data);
-  //   };
+              // After 1 second, set the priceUpdated state for this item back to false
+              setTimeout(() => {
+                setPriceUpdated((prev) => {
+                  const newPriceUpdated = [...prev];
+                  newPriceUpdated[indexToUpdate] = false;
+                  return newPriceUpdated;
+                });
+              }, 1000);
 
-  //   return () => {
-  //     socket.close();
-  //   };
-  // }, [market]);
+              if (!sorted) {
+                const itemToUpdate = updatedData.splice(indexToUpdate, 1)[0];
+                updatedData.unshift(itemToUpdate);
+              }
+            }
+          }
 
-  //주의 마크
+          return updatedData;
+        });
+      };
+      reader.readAsText(event.data);
+    };
+
+    return () => {
+      socket.close();
+      console.log("socket closed");
+    };
+  }, [market]);
+
+  // 정렬 기능
+  const sortData = (field: keyof tableData) => {
+    if (sortBy === field) {
+      setOrder(!order);
+      setUpbitTableData((prev) =>
+        [...prev].sort((a, b) => {
+          if (typeof a[field] === "number" && typeof b[field] === "number") {
+            return order
+              ? (a[field] as number) - (b[field] as number)
+              : (b[field] as number) - (a[field] as number);
+          }
+          if (typeof a[field] === "string" && typeof b[field] === "string") {
+            return order
+              ? (a[field] as string).localeCompare(b[field] as string)
+              : (b[field] as string).localeCompare(a[field] as string);
+          }
+          return 0;
+        })
+      );
+    } else {
+      setSortBy(field);
+      setOrder(true);
+      setUpbitTableData((prev) =>
+        [...prev].sort((a, b) => {
+          if (typeof a[field] === "number" && typeof b[field] === "number") {
+            return (a[field] as number) - (b[field] as number);
+          }
+          if (typeof a[field] === "string" && typeof b[field] === "string") {
+            return (a[field] as string).localeCompare(b[field] as string);
+          }
+          return 0;
+        })
+      );
+    }
+    setSorted(true);
+  };
+
+  //주의 마크 span
   const toggleSpan = () => {
     setShowSpan(!showSpan);
   };
+
   return (
     <table className="w-full max-w-screen-lg mt-4 text-xs table-fixed sm:text-sm">
       <thead className="text-xs">
         <tr className="text-right border-b border-b-gray-500 dark:border-b-neutral-700 [&>th]:text-neutral-500">
-          <th className="py-2 cursor-pointer text-left text-neutral-400 dark:text-neutral-400">
+          <th
+            className="py-2 cursor-pointer text-left text-neutral-400 dark:text-neutral-400"
+            onClick={() => sortData("name")}
+          >
             이름
             <span className="ml-1 text-[10px] relative">
               <i className="absolute -top-[2px] fa-solid fa-caret-up text-neutral-400 dark:text-neutral-400"></i>
               <i className="absolute -bottom-[2px] fa-solid fa-caret-down text-neutral-400 dark:text-neutral-400 "></i>
             </span>
           </th>
-          <th className="py-2 cursor-pointer text-right text-neutral-400 dark:text-neutral-400">
+          <th
+            className="py-2 cursor-pointer text-right text-neutral-400 dark:text-neutral-400"
+            onClick={() => sortData("currentPrice")}
+          >
             현재가(KRW)
             <span className="ml-1 text-[10px] relative">
               <i className="absolute -top-[2px] fa-solid fa-caret-up text-neutral-400 dark:text-neutral-400"></i>
@@ -169,16 +213,22 @@ export default function Table() {
               <i className="absolute -bottom-[2px] fa-solid fa-caret-down text-black dark:text-white "></i>
             </span>
           </th>
-          <th className="py-2 cursor-pointer text-right text-neutral-400 dark:text-neutral-400">
+          <th
+            className="py-2 cursor-pointer text-right text-neutral-400 dark:text-neutral-400"
+            onClick={() => sortData("signed_change_rate")}
+          >
             전일 대비
             <span className="ml-1 text-[10px] relative">
               <i className="absolute -top-[2px] fa-solid fa-caret-up text-neutral-400 dark:text-neutral-400"></i>
               <i className="absolute -bottom-[2px] fa-solid fa-caret-down text-neutral-400 dark:text-neutral-400 "></i>
             </span>
           </th>
-          <th className="py-2 cursor-pointer text-right text-neutral-400 dark:text-neutral-400">
+          <th
+            className="py-2 cursor-pointer text-right text-neutral-400 dark:text-neutral-400"
+            onClick={() => sortData("tradeVolume")}
+          >
             거래액(일)
-            <span className="ml-1 text-[10px] relative">
+            <span className="ml-1 text-[10px] relative ">
               <i className="absolute -top-[2px] fa-solid fa-caret-up text-neutral-400 dark:text-neutral-400"></i>
               <i className="absolute -bottom-[2px] fa-solid fa-caret-down text-neutral-400 dark:text-neutral-400 "></i>
             </span>
@@ -186,7 +236,7 @@ export default function Table() {
         </tr>
       </thead>
       <tbody>
-        {tableData.map((data, index) => (
+        {upbitTableData.map((data, index) => (
           <tr
             key={index}
             className="text-right border-b-gray-200 border-b tracking-tight [&>td]:py-1 dark:border-b-neutral-700"
@@ -224,7 +274,9 @@ export default function Table() {
               </div>
             </td>
             <td className="flex flex-col">
-              <p>{data.currentPrice.toLocaleString()}</p>
+              <p className={`${priceUpdated[index] ? "updated" : ""}`}>
+                {data.currentPrice.toLocaleString()}
+              </p>
               <p className="text-gray-500 transition-opacity dark:text-gray-400">
                 {/* 여기에 이전 가격 또는 다른 정보를 넣을 수 있습니다. */}
               </p>
@@ -234,19 +286,12 @@ export default function Table() {
             </td>
             <td
               className={
-                (data.currentPrice - data.prev_closing_price) /
-                  data.prev_closing_price >
-                0
+                data.signed_change_rate > 0
                   ? "text-red-600 dark:text-red-500"
                   : "text-green-600 dark:text-green-500"
               }
             >
-              {(
-                ((data.currentPrice - data.prev_closing_price) /
-                  data.prev_closing_price) *
-                100
-              ).toFixed(2)}
-              %
+              {(data.signed_change_rate * 100).toFixed(2)}%
             </td>
             <td className="flex flex-col">
               <p title={`${data.tradeVolume.toLocaleString()}원`}>
