@@ -125,6 +125,7 @@ export default function Table() {
                 const itemToUpdate = updatedData.splice(indexToUpdate, 1)[0];
                 updatedData.unshift(itemToUpdate);
               }
+              console.log(sorted);
             }
           }
 
@@ -142,6 +143,7 @@ export default function Table() {
 
   // 정렬 기능
   const sortData = (field: keyof tableData) => {
+    setSorted(true);
     if (sortBy === field) {
       setOrder(!order);
       setUpbitTableData((prev) =>
@@ -174,7 +176,6 @@ export default function Table() {
         })
       );
     }
-    setSorted(true);
   };
 
   //주의 마크 span
