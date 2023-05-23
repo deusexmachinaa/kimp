@@ -10,25 +10,6 @@
   --foreground: black;
 }
 
-[data-theme="dark"] {
-  --background: black;
-  --foreground: white;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
-
-body {
-  color: rgb(var(--foreground));
-  background: linear-gradient(to bottom, transparent, rgb(var(--background)))
-    rgb(var(--background));
-}
-
 @keyframes rotate {
   from {
     transform: rotate(0deg);

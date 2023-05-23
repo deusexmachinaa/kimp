@@ -1,5 +1,6 @@
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import Script from "next/script";
 import { useState } from "react";
 
 export default function Nav() {
@@ -16,6 +17,10 @@ export default function Nav() {
 
   return (
     <nav className="h-20 p-2 border-b dark:border-neutral-700">
+      <Script
+        src="https://kit.fontawesome.com/110e54d917.js"
+        data-nscript="afterInteractive"
+      />
       <div className="flex items-center justify-between h-full max-w-screen-lg m-auto ">
         <Link href={"/"} className="font-extrabold text-pink-500 sm:text-4xl">
           KIMPGG

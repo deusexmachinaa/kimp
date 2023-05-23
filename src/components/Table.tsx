@@ -335,11 +335,6 @@ export default function Table() {
     };
   }, [market]);
 
-  //주의 마크 span
-  const toggleSpan = () => {
-    setShowSpan(!showSpan);
-  };
-
   return (
     <table className="w-full max-w-screen-lg mt-4 text-xs table-fixed sm:text-sm">
       <thead className="text-xs">
@@ -400,9 +395,10 @@ export default function Table() {
         {tableData.map((data, index) => (
           <tr
             key={index}
-            className="text-right border-b-gray-200 border-b tracking-tight [&>td]:py-1 dark:border-b-neutral-700"
+            className="text-right border-b-gray-200 border-b tracking-tight dark:border-b-neutral-700 [&>td]:py-1"
           >
-            <td className="text-left">
+            <td className="text-left ">
+              {/* 이름 */}
               <div className="flex items-center gap-1">
                 <img
                   alt={`${data.code} 아이콘`}
@@ -417,24 +413,14 @@ export default function Table() {
                   {data.name}
                 </p>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 ">
                 <p className="inline-block text-gray-500 dark:text-gray-400">
                   {data.code}
                 </p>
-                {/* <div className="relative">
-                  <i
-                    className="text-yellow-400 fa-solid fa-circle-exclamation sm:hover:cursor-pointer"
-                    onClick={toggleSpan}
-                  ></i>
-                  {showSpan && (
-                    <span className="absolute -top-0.5 sm:top-0 block py-0.5 px-1 text-xs rounded-md py -right-20 dark:bg-neutral-700 bg-gray-200">
-                      투자 유의 종목
-                    </span>
-                  )}
-                </div> */}
               </div>
             </td>
             <td className="flex flex-col">
+              {/* 현재가 */}
               <p className={`${priceUpdated[index] ? "updated" : ""}`}>
                 {data.currentPrice.toLocaleString()}
               </p>
@@ -455,9 +441,11 @@ export default function Table() {
                   : "text-green-600 dark:text-green-500"
               }
             >
+              {/* 전일대비 */}
               {(data.signed_change_rate * 100).toFixed(2)}%
             </td>
             <td className="flex flex-col">
+              {/* 거래액 */}
               <p title={`${data.tradeVolume.toLocaleString()}원`}>
                 {(data.tradeVolume / 100000000).toFixed(2)}억
               </p>

@@ -8,7 +8,7 @@ export default function Market() {
   return (
     <div className="sm:flex sm:items-center sm:justify-between">
       <div className="relative flex items-center justify-between gap-10 mb-4 text-center sm:mb-0">
-        <div className="relative w-full bg-white border border-gray-200 rounded-md dark:border-neutral-700 dark:bg-neutral-800 sm:w-40">
+        <div className="relative w-full border border-gray-200 rounded-md dark:border-neutral-700 dark:bg-neutral-800 sm:w-40">
           <button className="w-full px-4 py-3 border border-gray-200 rounded-md dark:border-neutral-700 [&>*]:justify-center">
             <div className="flex items-center h-5 gap-2">
               <Image alt="upbit krw" src={upbit} width={20} height={20} />
@@ -38,7 +38,7 @@ export default function Market() {
           </ul>
         </div>
         <i className="absolute text-xs -translate-x-1/2 fa-solid fa-right-left left-1/2"></i>
-        <div className="relative w-full bg-white border border-gray-200 rounded-md dark:border-neutral-700 dark:bg-neutral-800 sm:w-40">
+        <div className="relative w-full border border-gray-200 rounded-md dark:border-neutral-700 dark:bg-neutral-800 sm:w-40">
           <button className="w-full px-4 py-3 border border-gray-200 rounded-md dark:border-neutral-700 [&>*]:justify-center">
             <div className="flex flex-row items-center h-5 gap-2">
               <Image alt="binance usdt" src={binance} width={20} height={20} />
