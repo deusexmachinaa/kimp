@@ -3,8 +3,21 @@ import Image from "next/image";
 import React from "react";
 import upbit from "/public/upbit.webp";
 import binance from "/public/binance.webp";
+import { create } from "zustand";
+
+export type searchState = {
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
+};
+// Define your store
+export const useSearchStore = create<searchState>((set) => ({
+  searchTerm: "",
+  setSearchTerm: (term: string) => set({ searchTerm: term }),
+}));
 
 export default function Market() {
+  const searchTerm = useSearchStore((state) => state.searchTerm);
+  const setSearchTerm = useSearchStore((state) => state.setSearchTerm);
   return (
     <div className="sm:flex sm:items-center sm:justify-between">
       <div className="relative flex items-center justify-between gap-10 mb-4 text-center sm:mb-0">
@@ -74,6 +87,7 @@ export default function Market() {
             placeholder="비트코인, btc"
             className="w-100 px-8 py-2 border border-gray-200 rounded-md dark:bg-neutral-800 focus:outline-none dark:border-neutral-700 sm:w-70"
             defaultValue=""
+            onChange={(event) => setSearchTerm(event.target.value)}
           />
         </div>
       </div>

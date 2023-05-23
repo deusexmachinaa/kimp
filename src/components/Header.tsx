@@ -7,14 +7,14 @@ export type exchangeState = {
   setExchangeRate: (rate: number) => void;
 };
 // Define your store
-export const useStore = create<exchangeState>((set) => ({
+export const useExchangeStore = create<exchangeState>((set) => ({
   exchangeRate: 0,
   setExchangeRate: (rate: number) => set({ exchangeRate: rate }),
 }));
 
 export default function Header() {
-  const exchangeRate = useStore((state) => state.exchangeRate);
-  const setExchangeRate = useStore((state) => state.setExchangeRate);
+  const exchangeRate = useExchangeStore((state) => state.exchangeRate);
+  const setExchangeRate = useExchangeStore((state) => state.setExchangeRate);
 
   useEffect(() => {
     fetch(

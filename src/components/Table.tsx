@@ -6,7 +6,8 @@ import {
   tableData,
 } from "@/app/types";
 import { useEffect, useRef, useState } from "react";
-import { useStore } from "./Header";
+import { useExchangeStore } from "./Header";
+import { useSearchStore } from "./Market";
 
 export default function Table() {
   const [showSpan, setShowSpan] = useState(false);
@@ -22,7 +23,14 @@ export default function Table() {
   const [order, setOrder] = useState(true);
   const sortedRef = useRef(false);
   const [search, setSearch] = useState("");
-  const exchangeRate = useStore((state) => state.exchangeRate);
+  const exchangeRate = useExchangeStore((state) => state.exchangeRate);
+  const searchTerm = useSearchStore((state) => state.searchTerm);
+
+  const filteredData = tableData.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.code.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -392,7 +400,7 @@ export default function Table() {
         </tr>
       </thead>
       <tbody>
-        {tableData.map((data, index) => (
+        {filteredData.map((data, index) => (
           <tr
             key={index}
             className="text-right border-b-gray-200 border-b tracking-tight dark:border-b-neutral-700 [&>td]:py-1"
@@ -421,7 +429,9 @@ export default function Table() {
             </td>
             <td className="flex flex-col">
               {/* 현재가 */}
-              <p className={`${priceUpdated[index] ? "updated" : ""}`}>
+              <p
+              // className={`${priceUpdated[index] ? "updated" : ""}`}
+              >
                 {data.currentPrice.toLocaleString()}
               </p>
               <p className="text-gray-500 transition-opacity dark:text-gray-400">
