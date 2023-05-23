@@ -8,6 +8,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useExchangeStore } from "./Header";
 import { useSearchStore } from "./Market";
+import getChosungs from "./chosung";
 
 export default function Table() {
   const [showSpan, setShowSpan] = useState(false);
@@ -29,7 +30,8 @@ export default function Table() {
   const filteredData = tableData.filter(
     (item) =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.code.toLowerCase().includes(searchTerm.toLowerCase())
+      item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getChosungs(item.name).includes(searchTerm.toLowerCase())
   );
 
   // 초기 데이터 로드
