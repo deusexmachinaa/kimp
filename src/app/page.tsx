@@ -1,9 +1,9 @@
 "use client";
+import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import Market from "@/components/Market";
 import Nav from "@/components/Nav";
 import Table from "@/components/Table";
-import Footer from "@/components/footer";
 import Script from "next/script";
 import React from "react";
 
