@@ -7,6 +7,7 @@ export type tableData = {
   name: string; //한국이름
   code: string; //코드
   currentPrice: number; //현재가
+  prev_closing_price: number; //전일종가
   signed_change_rate: number; //전일대비
   tradeVolume: number; // 거래량
   binancePrice?: number; //바이낸스 가격

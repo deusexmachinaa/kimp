@@ -65,6 +65,7 @@ export default function Table() {
               currentPrice: data.trade_price,
               signed_change_rate: data.signed_change_rate,
               tradeVolume: data.acc_trade_price_24h,
+              prev_closing_price: data.prev_closing_price,
             };
 
             tableDataArr.push(newData);
@@ -431,12 +432,13 @@ export default function Table() {
             </td>
             <td className="flex flex-col">
               {/* 현재가 */}
-              <p
-              // className={`${priceUpdated[index] ? "updated" : ""}`}
-              >
+              <p title={`${data.currentPrice.toLocaleString()}원`}>
                 {data.currentPrice.toLocaleString()}
               </p>
-              <p className="text-gray-500 transition-opacity dark:text-gray-400">
+              <p
+                title={`${data.binancePrice?.toLocaleString() ?? 0}달러`}
+                className="text-gray-500 transition-opacity dark:text-gray-400"
+              >
                 {data.binancePrice
                   ? (data.binancePrice * exchangeRate).toLocaleString()
                   : "-"}
@@ -447,6 +449,7 @@ export default function Table() {
               {data.KimchiPremium ? data.KimchiPremium.toFixed(2) + "%" : "-"}
             </td>
             <td
+              title={`${data.prev_closing_price.toLocaleString()}원`}
               className={
                 data.signed_change_rate > 0
                   ? "text-red-600 dark:text-red-500"
@@ -465,7 +468,7 @@ export default function Table() {
                 억원
               </p>
               <p
-                title={`${data.binanceVolume?.toLocaleString()}달러, ${(
+                title={`${data.binanceVolume?.toLocaleString()}달러\n${(
                   exchangeRate * data.binanceVolume!
                 ).toLocaleString()}원`}
                 className="text-gray-500 transition-opacity dark:text-gray-400"
