@@ -4,7 +4,6 @@ import Header from "@/components/Header";
 import Market from "@/components/Market";
 import Nav from "@/components/Nav";
 import Table from "@/components/Table";
-import Script from "next/script";
 import React from "react";
 
 export default function HomePage() {
