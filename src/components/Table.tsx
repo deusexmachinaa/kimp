@@ -315,7 +315,7 @@ export default function Table() {
       binanceSocket.onmessage = (event) => {
         const data = JSON.parse(event.data);
         const binancePrice = Number(data.p); // last trade price
-        const binanceVolume = Number(data.q); // last trade quantity
+        // const binanceVolume = Number(data.q); // last trade quantity
 
         // Update the binancePrice and binanceVolume properties of the relevant item in tableData
         setTableData((prevData) => {
@@ -330,7 +330,7 @@ export default function Table() {
               (itemToUpdate.currentPrice / (binancePrice * exchangeRate) - 1) *
               100;
 
-            // itemToUpdate.binanceVolume = binanceVolume;
+            // itemToUpdate.binanceVolume! += binanceVolume;
           }
 
           return updatedData;
@@ -393,7 +393,7 @@ export default function Table() {
             className="py-2 cursor-pointer text-right text-neutral-400 dark:text-neutral-400 select-none"
             onClick={() => sortData("tradeVolume")}
           >
-            거래액(일)
+            거래액(24h)
             <span className="ml-1 text-[10px] relative ">
               <i className="absolute -top-[2px] fa-solid fa-caret-up text-neutral-400 dark:text-neutral-400"></i>
               <i className="absolute -bottom-[2px] fa-solid fa-caret-down text-neutral-400 dark:text-neutral-400 "></i>
@@ -459,12 +459,26 @@ export default function Table() {
             <td className="flex flex-col">
               {/* 거래액 */}
               <p title={`${data.tradeVolume.toLocaleString()}원`}>
-                {(data.tradeVolume / 100000000).toFixed(2)}억
+                {Number(
+                  (data.tradeVolume / 100_000_000).toFixed(2)
+                ).toLocaleString()}
+                억원
               </p>
-              <p className="text-gray-500 transition-opacity dark:text-gray-400">
+              <p
+                title={`${data.binanceVolume?.toLocaleString()}달러, ${(
+                  exchangeRate * data.binanceVolume!
+                ).toLocaleString()}원`}
+                className="text-gray-500 transition-opacity dark:text-gray-400"
+              >
                 {data.binanceVolume
-                  ? ((data.binanceVolume / 100000000) * 1318).toLocaleString() +
-                    "억"
+                  ? (data.binanceVolume * exchangeRate) / 1_000_000_000_000 >= 1
+                    ? (
+                        (data.binanceVolume * exchangeRate) /
+                        1_000_000_000_000
+                      ).toFixed(2) + "조원"
+                    : Math.floor(
+                        (data.binanceVolume * exchangeRate) / 100_000_000
+                      ).toLocaleString() + "억원"
                   : "-"}
               </p>
             </td>
