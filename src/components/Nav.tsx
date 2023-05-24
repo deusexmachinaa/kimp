@@ -1,19 +1,41 @@
-import { useTheme } from "next-themes";
+"use client";
+import { useCallback } from "react";
 import Link from "next/link";
 import Script from "next/script";
-import { useState } from "react";
 
 export default function Nav() {
-  const { theme, setTheme } = useTheme();
-  const [isRotating, setIsRotating] = useState(false);
-  const handleClick = () => {
-    setIsRotating(true);
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
+  const handleMouseOver = useCallback((event: React.MouseEvent) => {
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let interval: NodeJS.Timeout | null = null;
+    let iteration = 0;
 
-  const handleAnimationEnd = () => {
-    setIsRotating(false);
-  };
+    interval = setInterval(() => {
+      const titleElement = event.target as HTMLElement;
+
+      titleElement.innerText = titleElement.innerText
+        .split("")
+        .map((letter, index) => {
+          if (index < iteration) {
+            return titleElement.getAttribute("data-value")?.[index] || "";
+          }
+
+          return letters[Math.floor(Math.random() * 26)];
+        })
+        .join("");
+
+      if (iteration >= (titleElement.getAttribute("data-value") || "").length) {
+        clearInterval(interval as NodeJS.Timeout);
+      }
+
+      iteration += 1 / 3;
+    }, 30);
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, []);
 
   return (
     <nav className="h-20 p-2 border-b dark:border-neutral-700">
@@ -22,22 +44,14 @@ export default function Nav() {
         data-nscript="afterInteractive"
       />
       <div className="flex items-center justify-between h-full max-w-screen-lg m-auto ">
-        <Link href={"/"} className="font-extrabold text-pink-500 sm:text-4xl">
-          KIMPGG
-        </Link>
-        <button
-          onClick={handleClick}
-          onAnimationEnd={handleAnimationEnd}
-          className={`text-2xl w-10 h-10 justify-center flex items-center bubble hover:bg-gray-200 hover:dark:bg-neutral-700 rounded-full p-2 ${
-            isRotating ? "animate-rotate" : ""
-          }`}
+        <Link
+          href={"/"}
+          onMouseOver={handleMouseOver}
+          data-value="KIMP.SITE"
+          className="font-extrabold text-pink-500 sm:text-4xl"
         >
-          {theme === "dark" ? (
-            <i className="fa-solid fa-sun"></i>
-          ) : (
-            <i className="fa-solid fa-moon"></i>
-          )}
-        </button>
+          KIMP.SITE
+        </Link>
       </div>
     </nav>
   );
