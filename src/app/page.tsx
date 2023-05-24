@@ -10,12 +10,6 @@ import React from "react";
 export default function HomePage() {
   return (
     <>
-      <Script
-        async
-        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8390086553135895"
-        strategy="lazyOnload"
-        crossOrigin="anonymous"
-      />
       <Header />
       <Nav />
       <article className="max-w-screen-lg min-h-screen px-2 py-4 m-auto">
