@@ -13,9 +13,9 @@ export default function Footer() {
             className="ml-2 font-bold"
             target="_blank"
             rel="noreferrer"
-            href="http://t.me/kimpgg"
+            href="http://t.me/kimp_site"
           >
-            http://t.me/kimpgg
+            http://t.me/kimp_site
           </a>
         </div>
       </div>
