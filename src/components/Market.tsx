@@ -50,7 +50,7 @@ export default function Market() {
             </li>
           </ul>
         </div>
-        <i className="absolute text-xs -translate-x-1/2 fa-solid fa-right-left left-1/2"></i>
+        <i className="text-xs -translate-x-1/2 fa-solid fa-right-left left-1/2"></i>
         <div className="relative w-full border border-gray-200 rounded-md dark:border-neutral-700 dark:bg-neutral-800 sm:w-40">
           <button className="w-full px-4 py-3 border border-gray-200 rounded-md dark:border-neutral-700 [&>*]:justify-center cursor-default">
             <div className="flex flex-row items-center h-5 gap-2">
