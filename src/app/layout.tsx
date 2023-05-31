@@ -9,7 +9,7 @@ import { Metadata } from "next";
 
 const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
-  title: "김치프리미엄 김프(kimchi premium) - 김프사이트 - kimp.site",
+  title: "김프 사이트 (kimp.site) - 김프사이트 - kimp.site",
   description:
     "김프 김치프리미엄 역프 및 암호화폐, 비트코인 시세 변동을 실시간으로 제공합니다. 김프 사이트 kimp.site",
   keywords:
