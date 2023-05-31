@@ -440,7 +440,9 @@ export default function Table() {
                 className="text-gray-500 transition-opacity dark:text-gray-400"
               >
                 {data.binancePrice
-                  ? (data.binancePrice * exchangeRate).toLocaleString()
+                  ? Math.round(
+                      data.binancePrice * exchangeRate
+                    ).toLocaleString()
                   : "-"}
               </p>
             </td>
@@ -479,7 +481,7 @@ export default function Table() {
                         (data.binanceVolume * exchangeRate) /
                         1_000_000_000_000
                       ).toFixed(2) + "조원"
-                    : Math.floor(
+                    : Math.round(
                         (data.binanceVolume * exchangeRate) / 100_000_000
                       ).toLocaleString() + "억원"
                   : "-"}
