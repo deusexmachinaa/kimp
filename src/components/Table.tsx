@@ -364,7 +364,7 @@ export default function Table() {
             className="py-2 cursor-pointer text-right text-neutral-400 dark:text-neutral-400 select-none"
             onClick={() => sortData("currentPrice")}
           >
-            현재가(KRW)
+            현재가
             <span className="ml-1 text-[10px] relative">
               <i className="absolute -top-[2px] fa-solid fa-caret-up text-neutral-400 dark:text-neutral-400"></i>
               <i className="absolute -bottom-[2px] fa-solid fa-caret-down text-neutral-400 dark:text-neutral-400 "></i>
@@ -433,7 +433,7 @@ export default function Table() {
             <td className="flex flex-col">
               {/* 현재가 */}
               <p title={`${data.currentPrice.toLocaleString()}원`}>
-                {data.currentPrice.toLocaleString()}
+                {data.currentPrice.toLocaleString()}원
               </p>
               <p
                 title={`${data.binancePrice?.toLocaleString() ?? 0}달러`}
@@ -442,7 +442,7 @@ export default function Table() {
                 {data.binancePrice
                   ? Math.round(
                       data.binancePrice * exchangeRate
-                    ).toLocaleString()
+                    ).toLocaleString() + "원"
                   : "-"}
               </p>
             </td>
@@ -459,7 +459,10 @@ export default function Table() {
               }
             >
               {/* 전일대비 */}
-              {(data.signed_change_rate * 100).toFixed(2)}%
+              <p>{(data.signed_change_rate * 100).toFixed(2)}%</p>
+              <p className="text-gray-500 transition-opacity dark:text-gray-400">
+                {data.prev_closing_price.toLocaleString()}원
+              </p>
             </td>
             <td className="flex flex-col">
               {/* 거래액 */}
