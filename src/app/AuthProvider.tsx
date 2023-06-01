@@ -6,11 +6,20 @@ import {
   signInAnonymously,
   updateProfile,
 } from "firebase/auth";
+import {
+  getDatabase,
+  onValue,
+  ref,
+  set,
+  serverTimestamp,
+  onDisconnect,
+} from "firebase/database";
 import { auth } from "@/firebase/firebase";
 import getNickname from "@/api/getNickname";
 
 interface AuthContextType {
   currentUser: User | null;
+  userCount: number | null;
 }
 
 // Context 생성
@@ -18,16 +27,41 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userCount, setUserCount] = useState(0);
   const [pending, setPending] = useState(true);
 
+  // Firebase Realtime Database 초기화
+  const database = getDatabase();
+
   useEffect(() => {
+    const userStatusDatabaseRef = ref(database, "status/" + currentUser?.uid);
+    const isOfflineForDatabase = {
+      state: "offline",
+      last_changed: serverTimestamp(),
+    };
+
+    const isOnlineForDatabase = {
+      state: "online",
+      last_changed: serverTimestamp(),
+    };
+
+    onValue(ref(database, ".info/connected"), (snapshot) => {
+      if (snapshot.val() === false) {
+        set(userStatusDatabaseRef, isOfflineForDatabase);
+        return;
+      }
+      onDisconnect(userStatusDatabaseRef)
+        .set(isOfflineForDatabase)
+        .then(function () {
+          set(userStatusDatabaseRef, isOnlineForDatabase);
+        });
+    });
+
     signInAnonymously(auth)
       .then((credential) => {
         if (credential.user && !credential.user.displayName) {
-          // 외부 API에서 닉네임 가져오기
           getNickname()
             .then((randomNickname) => {
-              // Firebase 사용자 프로필에 랜덤 닉네임 설정
               return updateProfile(credential.user, {
                 displayName: randomNickname,
               });
@@ -47,6 +81,19 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
+  useEffect(() => {
+    const userCountRef = ref(database, "status");
+    onValue(userCountRef, (snapshot) => {
+      let count = 0;
+      snapshot.forEach((childSnapshot) => {
+        if (childSnapshot.val().state === "online") {
+          count++;
+        }
+      });
+      setUserCount(count);
+    });
+  }, []);
+
   if (pending) {
     return <>Loading...</>;
   }
@@ -55,6 +102,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     <AuthContext.Provider
       value={{
         currentUser,
+        userCount,
       }}
     >
       {children}
