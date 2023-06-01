@@ -32,7 +32,7 @@ export const subscribeToMessages = (
 ) => {
   const messagesQuery = query(
     collection(db, "messages"),
-    orderBy("createdAt", "desc"),
+    orderBy("createdAt", "asc"),
     limit(30)
   );
 
@@ -56,11 +56,17 @@ export const loadMoreMessages = async (lastVisible: Message | null) => {
     messagesQuery = query(
       messagesRef,
       orderBy("createdAt", "asc"),
+      orderBy("id", "asc"),
       startAfter(lastVisible.createdAt),
       limit(30)
     );
   } else {
-    messagesQuery = query(messagesRef, orderBy("createdAt", "asc"), limit(30));
+    messagesQuery = query(
+      messagesRef,
+      orderBy("createdAt", "asc"),
+      orderBy("id", "asc"), // Added this line
+      limit(30)
+    );
   }
 
   const snapshot = await getDocs(messagesQuery);
