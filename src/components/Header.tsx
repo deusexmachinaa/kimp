@@ -174,7 +174,7 @@ export default function Header() {
           {optionsVisible && (
             <ul
               id="talk-settings"
-              className="flex flex-col space-y-2 lg:space-y-1 py-2 w-56 border border-general bg-gray-50 dark:bg-gray-800 text-sm absolute top-14 lg:top-16 right-3 z-50 rounded shadow-lg transform opacity-100 scale-100"
+              className="flex flex-col space-y-2 lg:space-y-1 py-2 w-64 border border-general bg-gray-50 dark:bg-gray-800 text-sm absolute top-14 lg:top-16 right-3 z-50 rounded shadow-lg transform opacity-100 scale-100"
             >
               <li
                 className="text-base text-primary cursor-pointer underline whitespace-nowrap overflow-ellipsis overflow-x-hidden mx-3 text-center mb-4"
@@ -188,13 +188,13 @@ export default function Header() {
               {/* 설정 항목들 */}
               <SettingToggle
                 icon="fas fa-expand-alt"
-                text="채팅크기 최대화"
+                text="채팅창 크게"
                 value={isMaximized}
                 onToggle={() => setIsMaximized(!isMaximized)}
               />
               <SettingToggle
                 icon="fa-solid fa-arrows-rotate"
-                text="데이터 순서변경"
+                text="최신데이터를 맨위로"
                 value={doRenewal}
                 onToggle={() => setDoRenewal(!doRenewal)}
               />
