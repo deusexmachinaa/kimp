@@ -98,9 +98,9 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
-  if (pending) {
-    return <>Loading...</>;
-  }
+  //   if (pending) {
+  //     return <>Loading...</>;
+  //   }
 
   return (
     <AuthContext.Provider
