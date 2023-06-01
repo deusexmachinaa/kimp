@@ -13,6 +13,7 @@ import {
   set,
   serverTimestamp,
   onDisconnect,
+  DatabaseReference,
 } from "firebase/database";
 import { auth } from "@/firebase/firebase";
 import getNickname from "@/api/getNickname";
@@ -34,29 +35,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const database = getDatabase();
 
   useEffect(() => {
-    const userStatusDatabaseRef = ref(database, "status/" + currentUser?.uid);
-    const isOfflineForDatabase = {
-      state: "offline",
-      last_changed: serverTimestamp(),
-    };
-
-    const isOnlineForDatabase = {
-      state: "online",
-      last_changed: serverTimestamp(),
-    };
-
-    onValue(ref(database, ".info/connected"), (snapshot) => {
-      if (snapshot.val() === false) {
-        set(userStatusDatabaseRef, isOfflineForDatabase);
-        return;
-      }
-      onDisconnect(userStatusDatabaseRef)
-        .set(isOfflineForDatabase)
-        .then(function () {
-          set(userStatusDatabaseRef, isOnlineForDatabase);
-        });
-    });
-
     signInAnonymously(auth)
       .then((credential) => {
         if (credential.user && !credential.user.displayName) {
@@ -75,11 +53,37 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.error("Error during sign in:", error);
       });
 
+    let userStatusDatabaseRef: DatabaseReference;
+    const isOfflineForDatabase = {
+      state: "offline",
+      last_changed: serverTimestamp(),
+    };
+
+    const isOnlineForDatabase = {
+      state: "online",
+      last_changed: serverTimestamp(),
+    };
+
+    if (currentUser?.uid) {
+      userStatusDatabaseRef = ref(database, "status/" + currentUser.uid);
+      onValue(ref(database, ".info/connected"), (snapshot) => {
+        if (snapshot.val() === false) {
+          set(userStatusDatabaseRef, isOfflineForDatabase);
+          return;
+        }
+        onDisconnect(userStatusDatabaseRef)
+          .set(isOfflineForDatabase)
+          .then(function () {
+            set(userStatusDatabaseRef, isOnlineForDatabase);
+          });
+      });
+    }
+
     return onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setPending(false);
     });
-  }, []);
+  }, [currentUser?.uid]);
 
   useEffect(() => {
     const userCountRef = ref(database, "status");
