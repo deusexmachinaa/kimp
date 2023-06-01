@@ -6,7 +6,7 @@ import {
   tableData,
 } from "@/app/types";
 import { useEffect, useRef, useState } from "react";
-import { useExchangeStore } from "./Header";
+import { useExchangeStore, useOptionsStore } from "./Header";
 import { useSearchStore } from "./Market";
 import getChosungs from "./chosung";
 
@@ -26,6 +26,7 @@ export default function Table() {
   const [search, setSearch] = useState("");
   const exchangeRate = useExchangeStore((state) => state.exchangeRate);
   const searchTerm = useSearchStore((state) => state.searchTerm);
+  const doRenewal = useOptionsStore((state) => state.doRenewal);
 
   const filteredData = tableData.filter(
     (item) =>
@@ -33,6 +34,14 @@ export default function Table() {
       item.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       getChosungs(item.name).includes(searchTerm.toLowerCase())
   );
+
+  useEffect(() => {
+    if (!doRenewal) {
+      sortedRef.current = true;
+      return;
+    }
+    sortedRef.current = false;
+  }, [doRenewal]);
 
   // 초기 데이터 로드
   useEffect(() => {
