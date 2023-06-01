@@ -9,8 +9,6 @@ import React from "react";
 export default function HomePage() {
   return (
     <>
-      <Header />
-      <Nav />
       <article className="max-w-screen-lg min-h-screen px-2 py-4 m-auto">
         {/* TODO: Add more markets */}
         <Market />

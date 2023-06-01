@@ -39,7 +39,11 @@ export default function RootLayout({
       />
       <body className={inter.className}>
         <AuthProvider>
-          <ThemeProvide>{children}</ThemeProvide>
+          <ThemeProvide>
+            <Header />
+            <Nav />
+            {children}
+          </ThemeProvide>
         </AuthProvider>
       </body>
     </html>
