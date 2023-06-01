@@ -89,6 +89,29 @@ export default function Header() {
     }
   }, [isMaximized, doRenewal]);
 
+  useEffect(() => {
+    // 클릭이 발생했을 때 실행할 함수
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        optionsVisible &&
+        event.target &&
+        (event.target as HTMLElement).closest("#talk-settings") === null &&
+        (event.target as HTMLElement).closest("#gear-icon") === null
+      ) {
+        setOptionsVisible(false);
+      }
+    };
+
+    // 이벤트 리스너 등록
+    window.addEventListener("mousedown", handleClickOutside);
+
+    // cleanup function
+    return () => {
+      // 컴포넌트 unmount 시에 이벤트 리스너 제거
+      window.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [optionsVisible]); // `optionsVisible` 상태가 변경될 때마다 이 훅을 재실행
+
   // 닉네임 업데이트 함수
   const updateNickname = async () => {
     const newNickname = prompt("변경할 닉네임을 입력해주세요");
@@ -136,10 +159,17 @@ export default function Header() {
             )}
           </button>
           <button
+            id="gear-icon"
             className="text-xl ml-4 w-5 h-5 justify-center flex items-center bubble hover:bg-gray-200 hover:dark:bg-neutral-700 rounded-full p-2"
-            onClick={toggleOptions}
+            onClick={() => {
+              toggleOptions();
+            }}
           >
-            <i className="fa-solid fa-gear"></i>
+            <i
+              className={`fa-solid fa-gear ${
+                optionsVisible ? "animate-bounce" : ""
+              }`}
+            ></i>
           </button>
           {optionsVisible && (
             <ul
@@ -149,7 +179,9 @@ export default function Header() {
               <li
                 className="text-base text-primary cursor-pointer underline whitespace-nowrap overflow-ellipsis overflow-x-hidden mx-3 text-center mb-4"
                 title="닉네임 변경하려면 클릭하세요"
-                onClick={updateNickname}
+                onClick={() => {
+                  updateNickname();
+                }}
               >
                 {nickname}
               </li>
@@ -161,7 +193,7 @@ export default function Header() {
                 onToggle={() => setIsMaximized(!isMaximized)}
               />
               <SettingToggle
-                icon="fas fa-play-pause"
+                icon="fa-solid fa-arrows-rotate"
                 text="데이터 순서변경"
                 value={doRenewal}
                 onToggle={() => setDoRenewal(!doRenewal)}
