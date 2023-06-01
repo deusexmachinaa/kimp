@@ -154,7 +154,14 @@ const ChatComponent = () => {
                 ref={messagesContainerRef}
               >
                 {messages.map((message) => (
-                  <div key={message.id} className="my-0.5">
+                  <div
+                    key={message.id}
+                    className={`my-0.5 ${
+                      authContext?.currentUser?.uid === message.uid
+                        ? "text-right"
+                        : ""
+                    }`}
+                  >
                     <div className="text-sm lg:text-xs text-gray-600 dark:text-gray-400 mt-2.5 mb-1 inline-flex items-center space-x-1.5 hover:text-gray-400 dark:hover:text-gray-200">
                       <span className="flex items-center space-x-1  select-none">
                         <span>{message.displayName}</span>
@@ -165,22 +172,32 @@ const ChatComponent = () => {
                         )}
                         <span className="">
                           {/* <i
-                    aria-hidden="true"
-                    className="fas fa-ban text-gray-200 dark:text-gray-600 ml-1.5"
-                ></i> */}
+              aria-hidden="true"
+              className="fas fa-ban text-gray-200 dark:text-gray-600 ml-1.5"
+            ></i> */}
                         </span>
                       </span>
                     </div>
-                    <div className="flex items-end text-sm lg:text-xs rounded">
-                      <span className="py-1.5 px-2 rounded break-all bg-gray-100 dark:bg-gray-800">
+                    <div
+                      className={`flex ${
+                        authContext?.currentUser?.uid === message.uid
+                          ? "flex-row-reverse"
+                          : ""
+                      } items-end text-sm lg:text-xs rounded`}
+                    >
+                      <span className="py-1.5 px-2 rounded break-all bg-gray-100 dark:bg-gray-800 text-left">
                         {message.text}
                       </span>
                       <span className="mx-1.5 mb-0.5 text-xs whitespace-nowrap text-gray-500">
-                        {new Date(message.createdAt).toLocaleTimeString()}
+                        {new Date(message.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </span>
                     </div>
                   </div>
                 ))}
+
                 <div ref={messagesEndRef} />
               </div>
               {!isAtBottom && (
@@ -200,6 +217,8 @@ const ChatComponent = () => {
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
                   onKeyDown={handleKeyDown}
+                  maxLength={200}
+                  placeholder="메시지를 입력하세요 (최대 200자)"
                 />
               </span>
               <i
