@@ -71,3 +71,11 @@ export type BinancePriceData = {
   lastPrice: string;
   quoteVolume: string;
 };
+
+export type Message = {
+  id: string;
+  text: string;
+  uid: string;
+  displayName: string;
+  createdAt: Date;
+};

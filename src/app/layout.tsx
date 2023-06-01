@@ -6,6 +6,7 @@ import Nav from "@/components/Nav";
 import Script from "next/script";
 import ThemeProvide from "@/app/ThemeProvider";
 import { Metadata } from "next";
+import { AuthProvider } from "./AuthProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
@@ -37,7 +38,9 @@ export default function RootLayout({
         crossOrigin="anonymous"
       />
       <body className={inter.className}>
-        <ThemeProvide>{children}</ThemeProvide>
+        <AuthProvider>
+          <ThemeProvide>{children}</ThemeProvide>
+        </AuthProvider>
       </body>
     </html>
   );
