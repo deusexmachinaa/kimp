@@ -72,6 +72,12 @@ const ChatComponent = () => {
     }
   }, [messages, isAtBottom]);
 
+  useEffect(() => {
+    if (!isChatMinimized) {
+      scrollToBottom();
+    }
+  }, [isChatMinimized]);
+
   const handleSend = () => {
     if (messageText.trim() !== "") {
       sendMessage(messageText);
@@ -202,7 +208,7 @@ const ChatComponent = () => {
               </div>
               {!isAtBottom && (
                 <div
-                  className="absolute bottom-8 right-6 text-white dark:text-gray-900 bg-primary shadow cursor-pointer w-12 h-12 rounded-full flex items-center justify-center text-lg transition-opacity pt-0.5 opacity-100 bg-green-500"
+                  className="absolute bottom-8 right-6 text-white dark:text-gray-900 bg-primary shadow cursor-pointer w-12 h-12 rounded-full flex items-center justify-center text-lg transition-opacity pt-0.5 bg-green-500 opacity-50 hover:opacity-100"
                   onClick={scrollToBottom}
                 >
                   <i aria-hidden="true" className="fas fa-chevron-down"></i>
