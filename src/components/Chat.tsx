@@ -146,8 +146,11 @@ const ChatComponent = () => {
             >
               {nickname}
             </span>
-            <span className="text-gray-300 dark:text-gray-500 mx-2">
-              {userCount}
+            <span
+              className="text-gray-300 dark:text-gray-500 mx-2"
+              title="접속자 수"
+            >
+              {userCount}명
             </span>
           </div>
           <div className="relative">
