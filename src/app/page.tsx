@@ -1,4 +1,5 @@
 "use client";
+import ChatComponent from "@/components/Chat";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import Market from "@/components/Market";
@@ -14,6 +15,7 @@ export default function HomePage() {
         <Market />
         <Table />
       </article>
+      <ChatComponent />
       <Footer />
     </>
   );
