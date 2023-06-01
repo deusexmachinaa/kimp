@@ -5,6 +5,10 @@ import {
   query,
   orderBy,
   onSnapshot,
+  limit,
+  startAfter,
+  getDocs,
+  QuerySnapshot,
 } from "firebase/firestore";
 import { auth } from "@/firebase/firebase";
 import { Message } from "@/app/types";
@@ -28,7 +32,8 @@ export const subscribeToMessages = (
 ) => {
   const messagesQuery = query(
     collection(db, "messages"),
-    orderBy("createdAt", "asc")
+    orderBy("createdAt", "desc"),
+    limit(30)
   );
 
   return onSnapshot(messagesQuery, (snapshot) => {
@@ -41,4 +46,38 @@ export const subscribeToMessages = (
     }));
     callback(messages);
   });
+};
+
+export const loadMoreMessages = async (lastVisible: Message | null) => {
+  const messagesRef = collection(db, "messages");
+  let messagesQuery;
+
+  if (lastVisible) {
+    messagesQuery = query(
+      messagesRef,
+      orderBy("createdAt", "asc"),
+      startAfter(lastVisible.createdAt),
+      limit(30)
+    );
+  } else {
+    messagesQuery = query(messagesRef, orderBy("createdAt", "asc"), limit(30));
+  }
+
+  const snapshot = await getDocs(messagesQuery);
+  const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
+  const moreMessages = snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      text: data.text,
+      uid: data.uid,
+      displayName: data.displayName,
+      createdAt: data.createdAt.toDate(),
+    } as Message;
+  });
+
+  return {
+    moreMessages,
+    newLastVisible: moreMessages[moreMessages.length - 1],
+  };
 };
