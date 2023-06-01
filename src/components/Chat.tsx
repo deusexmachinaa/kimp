@@ -150,7 +150,7 @@ const ChatComponent = () => {
               className="text-gray-300 dark:text-gray-500 mx-2"
               title="접속자 수"
             >
-              {userCount}명
+              {userCount}
             </span>
           </div>
           <div className="relative">
