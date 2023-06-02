@@ -21,6 +21,7 @@ import getNickname from "@/api/getNickname";
 interface AuthContextType {
   currentUser: User | null;
   userCount: number | null;
+  pending?: boolean;
 }
 
 // Context 생성
@@ -35,10 +36,23 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const database = getDatabase();
 
   useEffect(() => {
+    const userCountRef = ref(database, "status");
+    onValue(userCountRef, (snapshot) => {
+      let count = 0;
+      snapshot.forEach((childSnapshot) => {
+        if (childSnapshot.val().state === "online") {
+          count++;
+        }
+      });
+      setUserCount(count);
+    });
+  }, []);
+
+  useEffect(() => {
     signInAnonymously(auth)
       .then((credential) => {
         if (credential.user && !credential.user.displayName) {
-          getNickname()
+          (getNickname() ?? Promise.resolve("익명의 사용자"))
             .then((randomNickname) => {
               return updateProfile(credential.user, {
                 displayName: randomNickname,
@@ -85,19 +99,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, [currentUser?.uid]);
 
-  useEffect(() => {
-    const userCountRef = ref(database, "status");
-    onValue(userCountRef, (snapshot) => {
-      let count = 0;
-      snapshot.forEach((childSnapshot) => {
-        if (childSnapshot.val().state === "online") {
-          count++;
-        }
-      });
-      setUserCount(count);
-    });
-  }, []);
-
   //   if (pending) {
   //     return <>Loading...</>;
   //   }
@@ -107,6 +108,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         currentUser,
         userCount,
+        pending: pending,
       }}
     >
       {children}

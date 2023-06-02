@@ -2,15 +2,15 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
 import { loadMoreMessages, sendMessage, subscribeToMessages } from "@/api/chat";
 import "tailwindcss/tailwind.css";
-import { updateProfile } from "firebase/auth";
+import { onAuthStateChanged, updateProfile } from "firebase/auth";
 import { Message } from "@/app/types";
 import { AuthContext } from "@/app/AuthProvider";
-import { useOptionsStore } from "./Header";
+import { nickNameState, useOptionsStore } from "./Header";
 
 const ChatComponent = () => {
   const [messageText, setMessageText] = useState("");
   const [messages, setMessages] = useState<Message[]>([] as Message[]);
-  const [nickname, setNickname] = useState("");
+
   const authContext = useContext(AuthContext);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -19,11 +19,12 @@ const ChatComponent = () => {
   const [isChatMinimized, setChatMinimized] = useState(false);
   const { userCount } = authContext!;
   const isMaximized = useOptionsStore((state) => state.isMaximized);
+  const { nickname, setNickname } = nickNameState();
 
   // 첫 로드 시 사용자의 displayName을 nickname state에 저장
   useEffect(() => {
-    setNickname(authContext?.currentUser?.displayName || "");
-  }, [authContext]);
+    setNickname(authContext?.currentUser?.displayName || "익명의 사용자");
+  }, [authContext?.currentUser?.displayName]);
 
   useEffect(() => {
     const unsubscribe = subscribeToMessages((newMessages) => {
@@ -173,17 +174,17 @@ const ChatComponent = () => {
                   <div className="text-sm lg:text-xs text-gray-600 dark:text-gray-400 mt-2.5 mb-1 inline-flex items-center space-x-1.5 hover:text-gray-400 dark:hover:text-gray-200">
                     <span className="flex items-center space-x-1  select-none">
                       <span>{message.displayName}</span>
-                      {authContext?.currentUser?.uid === message.uid && (
+                      {/* {authContext?.currentUser?.uid === message.uid && (
                         <span className="ml-1 text-gray-400 dark:text-gray-600 text-xxs">
                           LVE
                         </span>
-                      )}
-                      <span className="">
-                        {/* <i
+                      )} */}
+                      {/* <span className="">
+                        <i
               aria-hidden="true"
               className="fas fa-ban text-gray-200 dark:text-gray-600 ml-1.5"
-            ></i> */}
-                      </span>
+            ></i>
+                      </span> */}
                     </span>
                   </div>
                   <div

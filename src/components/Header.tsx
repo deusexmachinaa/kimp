@@ -32,12 +32,21 @@ export const useOptionsStore = create<optionsState>((set) => ({
   setDoRenewal: (doRenewal: boolean) => set({ doRenewal: doRenewal }),
 }));
 
+export type nickNameStore = {
+  nickname: string;
+  setNickname: (nickname: string) => void;
+};
+
+export const nickNameState = create<nickNameStore>((set) => ({
+  nickname: "익명의 사용자",
+  setNickname: (nickname: string) => set({ nickname }),
+}));
+
 export default function Header() {
   const { theme, setTheme } = useTheme();
   const [isRotating, setIsRotating] = useState(false);
-  const [nickname, setNickname] = useState("");
   const authContext = useContext(AuthContext);
-  const { currentUser } = authContext!;
+  const { currentUser, pending } = authContext!;
   const [optionsVisible, setOptionsVisible] = useState(false);
 
   const handleClick = () => {
@@ -54,10 +63,11 @@ export default function Header() {
   const setIsMaximized = useOptionsStore((state) => state.setIsMaximized);
   const doRenewal = useOptionsStore((state) => state.doRenewal);
   const setDoRenewal = useOptionsStore((state) => state.setDoRenewal);
+  const { nickname, setNickname } = nickNameState();
 
   useEffect(() => {
-    setNickname(currentUser?.displayName || "");
-  }, [currentUser]);
+    setNickname(authContext?.currentUser?.displayName || "익명의 사용자");
+  }, [authContext?.currentUser?.displayName, pending]);
 
   useEffect(() => {
     fetch(
