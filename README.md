@@ -38,13 +38,6 @@ Then open http://localhost:3000 with your browser to see the result. You can sta
 
 This project uses `next/font` to automatically optimize and load Inter, a custom Google Font.
 
-## Learn More
-To learn more about Next.js, check out the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-Feedback and contributions are welcome!
 
 ## Deployment
 This application is deployed using the Vercel Platform. Check out the [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
