@@ -6,6 +6,7 @@ import { onAuthStateChanged, updateProfile } from "firebase/auth";
 import { Message } from "@/app/types";
 import { AuthContext } from "@/app/AuthProvider";
 import { nickNameState, useOptionsStore } from "./Header";
+import getNickname from "@/api/getNickname";
 
 const ChatComponent = () => {
   const [messageText, setMessageText] = useState("");
@@ -100,13 +101,21 @@ const ChatComponent = () => {
 
   // 닉네임 업데이트 함수
   const updateNickname = async () => {
-    const newNickname = prompt("변경할 닉네임을 입력해주세요");
-    if (newNickname) {
+    // getNickname()으로 랜덤 닉네임을 생성합니다.
+    const newNickname = getNickname();
+
+    // 사용자에게 생성된 닉네임을 보여주고, 변경하길 원하는 경우 입력하게 합니다.
+    const userChosenNickname = prompt(
+      "변경할 닉네임을 입력해주세요",
+      await newNickname
+    );
+
+    if (userChosenNickname) {
       try {
         await updateProfile(authContext?.currentUser!, {
-          displayName: newNickname,
+          displayName: userChosenNickname,
         });
-        setNickname(newNickname);
+        setNickname(userChosenNickname);
       } catch (error) {
         console.error("Error updating nickname:", error);
       }
