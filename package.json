@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix"
   },
   "dependencies": {
     "@types/node": "^20.12.7",
@@ -24,7 +25,7 @@
     "typescript": "^5.4.5",
     "zustand": "^4.5.2",
     "encoding": "^0.1.13",
-    "tailwindcss": "^3.4.3"
+    "tailwindcss": "^3.1.4"
   },
   "devDependencies": {}
 }
