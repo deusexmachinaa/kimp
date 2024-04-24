@@ -20,6 +20,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.19(postcss@8.4.38)
+      encoding:
+        specifier: ^0.1.13
+        version: 0.1.13
       eslint:
         specifier: 8.56.0
         version: 8.56.0
@@ -44,19 +47,15 @@ importers:
       react-dom:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
+      tailwindcss:
+        specifier: ^3.4.3
+        version: 3.4.3
       typescript:
         specifier: ^5.4.5
         version: 5.4.5
       zustand:
         specifier: ^4.5.2
         version: 4.5.2(@types/react@18.2.79)(react@18.2.0)
-    devDependencies:
-      encoding:
-        specifier: ^0.1.13
-        version: 0.1.13
-      tailwindcss:
-        specifier: ^3.4.3
-        version: 3.4.3
 
 packages:
 
