@@ -28,9 +28,10 @@ const ChatComponent = () => {
   }, [authContext?.currentUser?.displayName]);
 
   useEffect(() => {
-    const unsubscribe = subscribeToMessages((newMessages) => {
+    const unsubscribe = subscribeToMessages((newMessages, newLastVisible) => {
       // 가장 최근의 30개 메시지만 표시
-      setMessages(newMessages.slice(-30));
+      setMessages(newMessages);
+      setLastVisible(newLastVisible);
     });
     // Unsubscribe from the messages when the component unmounts
     return unsubscribe;

@@ -28,11 +28,11 @@ export const sendMessage = async (messageText: string) => {
 };
 
 export const subscribeToMessages = (
-  callback: (messages: Message[]) => void
+  callback: (messages: Message[], lastVisible: Message | null) => void
 ) => {
   const messagesQuery = query(
     collection(db, "messages"),
-    orderBy("createdAt", "asc"),
+    orderBy("createdAt", "desc"),
     limit(30)
   );
 
@@ -44,46 +44,57 @@ export const subscribeToMessages = (
       displayName: doc.data().displayName,
       createdAt: doc.data().createdAt.toDate(), // assuming createdAt is a Timestamp
     }));
-    callback(messages);
+    const lastVisible =
+      messages.length > 0 ? messages[messages.length - 1] : null;
+    callback(messages.reverse(), lastVisible);
   });
 };
 
 export const loadMoreMessages = async (lastVisible: Message | null) => {
   const messagesRef = collection(db, "messages");
-  let messagesQuery;
+
+  // 과거 메시지 로드: 마지막으로 보이는 메시지 이후에 있는 과거 메시지들을 불러옵니다.
+  let messagesQuery = query(
+    messagesRef,
+    orderBy("createdAt", "desc"),
+    limit(30)
+  );
 
   if (lastVisible) {
     messagesQuery = query(
       messagesRef,
-      orderBy("createdAt", "asc"),
-      orderBy("id", "asc"),
+      orderBy("createdAt", "desc"),
       startAfter(lastVisible.createdAt),
       limit(30)
     );
   } else {
-    messagesQuery = query(
-      messagesRef,
-      orderBy("createdAt", "asc"),
-      orderBy("id", "asc"), // Added this line
-      limit(30)
-    );
+    return { moreMessages: [], newLastVisible: null };
   }
 
   const snapshot = await getDocs(messagesQuery);
-  const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
-  const moreMessages = snapshot.docs.map((doc) => {
-    const data = doc.data();
-    return {
+  if (!snapshot.empty) {
+    const newLastVisible = snapshot.docs[snapshot.docs.length - 1];
+    const newLastVisibleMessage: Message = {
+      // 새로운 `Message` 타입 객체 생성
+      id: newLastVisible.id,
+      text: newLastVisible.data().text,
+      uid: newLastVisible.data().uid,
+      displayName: newLastVisible.data().displayName,
+      createdAt: newLastVisible.data().createdAt.toDate(),
+    };
+    const moreMessages = snapshot.docs.map((doc) => ({
       id: doc.id,
-      text: data.text,
-      uid: data.uid,
-      displayName: data.displayName,
-      createdAt: data.createdAt.toDate(),
-    } as Message;
-  });
+      text: doc.data().text,
+      uid: doc.data().uid,
+      displayName: doc.data().displayName,
+      createdAt: doc.data().createdAt.toDate(),
+    }));
 
-  return {
-    moreMessages,
-    newLastVisible: moreMessages[moreMessages.length - 1],
-  };
+    return {
+      moreMessages: moreMessages.reverse(), // 배열을 뒤집어 과거에서 최신 순으로 메시지 표시
+      newLastVisible: newLastVisibleMessage,
+    };
+  } else {
+    return { moreMessages: [], newLastVisible: null };
+  }
 };
