@@ -5,7 +5,7 @@ import { Inter } from "next/font/google";
 import Nav from "@/components/Nav";
 import Script from "next/script";
 import ThemeProvide from "@/app/ThemeProvider";
-import { Metadata, Viewport } from "next";
+import { Metadata } from "next";
 import { AuthProvider } from "./AuthProvider";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -23,13 +23,9 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://kimp.site",
     siteName: "김프사이트 - kimp.site",
+    viewPort:
+      "width=device-width, initial-scale=1.0 maximum-scale=1.0 user-scalable=no",
   },
-};
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default function RootLayout({
