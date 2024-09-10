@@ -79,10 +79,10 @@ export default function Header() {
         const data = await response.json();
   
         // country 배열의 두 번째 객체에서 value 값을 가져옴
-        const exchangeRate = data.country[1]?.value;
+        const exchangeRate = data.country[1]?.value.replace(/,/g, '');
   
         if (exchangeRate) {
-          setExchangeRate(exchangeRate);
+          setExchangeRate(parseFloat(exchangeRate));
         } else {
           console.error("Exchange rate not found in the response.");
         }
