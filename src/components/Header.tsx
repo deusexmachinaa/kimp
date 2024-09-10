@@ -70,15 +70,20 @@ export default function Header() {
     setNickname(authContext?.currentUser?.displayName || "익명의 사용자");
   }, [authContext?.currentUser?.displayName, pending]);
 
-  useEffect(() => {
-    fetch(
-      "https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD"
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setExchangeRate(data[0].basePrice);
-      });
-  }, []);
+  // useEffect(() => {
+  //   try{
+  //     fetch(
+  //       "https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD"
+  //     )
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       setExchangeRate(data[0].basePrice);
+  //     });
+  //   }
+  //   catch (error) {
+  //     console.error("Error fetching exchange rate:", error);
+  //   }
+  // }, []);
 
   useEffect(() => {
     // 로그인한 사용자의 설정을 불러옵니다.
