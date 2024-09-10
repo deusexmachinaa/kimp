@@ -15,7 +15,7 @@ export type exchangeState = {
 };
 // Define your store
 export const useExchangeStore = create<exchangeState>((set) => ({
-  exchangeRate: 1343.8,
+  exchangeRate: 1350,
   setExchangeRate: (rate: number) => set({ exchangeRate: rate }),
 }));
 
@@ -70,20 +70,29 @@ export default function Header() {
     setNickname(authContext?.currentUser?.displayName || "익명의 사용자");
   }, [authContext?.currentUser?.displayName, pending]);
 
-  // useEffect(() => {
-  //   try{
-  //     fetch(
-  //       "https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD"
-  //     )
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       setExchangeRate(data[0].basePrice);
-  //     });
-  //   }
-  //   catch (error) {
-  //     console.error("Error fetching exchange rate:", error);
-  //   }
-  // }, []);
+  useEffect(() => {
+    const fetchExchangeRate = async () => {
+      try {
+        const response = await fetch(
+          "https://search.naver.com/p/csearch/content/qapirender.nhn?key=calculator&pkid=141&q=%ED%99%98%EC%9C%A8&where=m&u1=keb&u6=standardUnit&u7=0&u3=USD&u4=KRW&u8=down&u2=1"
+        );
+        const data = await response.json();
+  
+        // country 배열의 두 번째 객체에서 value 값을 가져옴
+        const exchangeRate = data.country[1]?.value;
+  
+        if (exchangeRate) {
+          setExchangeRate(exchangeRate);
+        } else {
+          console.error("Exchange rate not found in the response.");
+        }
+      } catch (error) {
+        console.error("Error fetching exchange rate:", error);
+      }
+    };
+  
+    fetchExchangeRate();
+  }, []);
 
   useEffect(() => {
     // 로그인한 사용자의 설정을 불러옵니다.
