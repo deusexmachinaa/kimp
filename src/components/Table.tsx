@@ -47,26 +47,15 @@ export default function Table() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response1 = await fetch("https://api.upbit.com/v1/market/all");
-        const fetchedData1 = await response1.json();
-        const krwMarkets = fetchedData1.filter((marketData: MarketData) =>
-          marketData.market.startsWith("KRW-")
-        );
-        // console.log(krwMarkets);
-
-        // 첫 번째 fetch가 완료된 후에 실행됩니다.
-        const query = krwMarkets.map((item: MarketData) => item.market);
-        const response2 = await fetch(
-          "https://api.upbit.com/v1/ticker?markets=" + query
-        );
-        const fetchedData2: ApiResponseType[] = await response2.json();
+        const response = await fetch("/api/upbit"); // Next.js API 호출
+        const data = await response.json();
+        const { krwMarkets, tickerData } = data;
+  
         let tableDataArr: tableData[] = [];
-
-        fetchedData2.forEach((data: ApiResponseType) => {
-          let marketData = krwMarkets.find(
-            (market: MarketData) => market.market === data.market
-          );
-
+  
+        tickerData.forEach((data: any) => {
+          let marketData = krwMarkets.find((market: any) => market.market === data.market);
+  
           if (marketData) {
             let newData: tableData = {
               name: marketData.korean_name,
@@ -76,21 +65,19 @@ export default function Table() {
               tradeVolume: data.acc_trade_price_24h,
               prev_closing_price: data.prev_closing_price,
             };
-
+  
             tableDataArr.push(newData);
           }
         });
-        // console.log(tableDataArr);
-
+  
         setTableData(tableDataArr);
         setMarket((prev) => krwMarkets);
       } catch (error) {
         console.error(error);
       }
     };
-
+  
     fetchData();
-    // console.log(upbitTableData);
   }, []);
 
   //바이낸스 데이터 로드
