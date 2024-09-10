@@ -15,7 +15,7 @@ export type exchangeState = {
 };
 // Define your store
 export const useExchangeStore = create<exchangeState>((set) => ({
-  exchangeRate: 1350,
+  exchangeRate: 1343.8,
   setExchangeRate: (rate: number) => set({ exchangeRate: rate }),
 }));
 
