@@ -79,3 +79,30 @@ export type Message = {
   displayName: string;
   createdAt: Date;
 };
+
+export interface upbitWebSocketResponseType {
+  code: string; // e.g., "KRW-AVAX"
+  acc_ask_volume: number;
+  acc_bid_volume: number;
+  acc_trade_price: number;
+  acc_trade_price_24h: number;
+  acc_trade_volume: number;
+  acc_trade_volume_24h: number;
+  ask_bid: string;
+  change: string;
+  change_price: number;
+  change_rate: number;
+  high_price: number;
+  low_price: number;
+  market_state: string;
+  opening_price: number;
+  prev_closing_price: number;
+  signed_change_price: number;
+  signed_change_rate: number;
+  trade_price: number;
+  trade_volume: number;
+  trade_timestamp: number;
+  timestamp: number;
+  market_warning: string;
+  stream_type: string;
+}

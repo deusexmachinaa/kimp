@@ -1,6 +1,6 @@
 "use client";
 import {
-  ApiResponseType,
+  upbitWebSocketResponseType,
   BinancePriceData,
   MarketData,
   tableData,
@@ -9,6 +9,72 @@ import { useEffect, useRef, useState } from "react";
 import { useExchangeStore, useOptionsStore } from "./Header";
 import { useSearchStore } from "./Market";
 import getChosungs from "./chosung";
+
+// WebSocket hook with type support
+function useWebSocket(url: string, market: MarketData[], updateTableData: (data: upbitWebSocketResponseType) => void) {
+  const [socket, setSocket] = useState<WebSocket | null>(null);
+
+  useEffect(() => {
+    let ws: WebSocket | null = null;
+    let retries = 0;
+
+    const connectWebSocket = () => {
+      ws = new WebSocket(url);
+      console.log("WebSocket connecting...");
+
+      ws.onopen = () => {
+        console.log("WebSocket connected");
+        retries = 0;
+        ws?.send(
+          JSON.stringify([
+            { ticket: "unique_ticket" },
+            {
+              type: "ticker",
+              codes: market.map((item) => item.market),
+              isOnlyRealtime: true,
+            },
+          ])
+        );
+      };
+
+      ws.onmessage = (event) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const newData: upbitWebSocketResponseType = JSON.parse(reader.result as string);
+          updateTableData(newData); // Update table data with WebSocket message
+        };
+        reader.readAsText(event.data);
+      };
+
+      ws.onclose = (event) => {
+        console.log(`WebSocket closed. Code: ${event.code}`);
+        retries += 1;
+        if (retries < 5) {
+          const retryTimeout = Math.min(1000 * 2 ** retries, 10000); // Exponential backoff
+          console.log(`WebSocket reconnecting in ${retryTimeout / 1000} seconds...`);
+          setTimeout(connectWebSocket, retryTimeout);
+        } else {
+          console.error("WebSocket connection failed after 5 attempts");
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        ws?.close();
+      };
+
+      setSocket(ws);
+    };
+
+    connectWebSocket();
+
+    return () => {
+      ws?.close();
+    };
+  }, [url, market]);
+
+  return socket;
+}
 
 export default function Table() {
   const [showSpan, setShowSpan] = useState(false);
@@ -134,89 +200,159 @@ export default function Table() {
     fetchBinanceData();
   }, [market]);
 
-  //업비트 웹소켓//
-  useEffect(() => {
-    // WebSocket 연결 및 실시간 업데이트
-    const socket = new WebSocket("wss://api.upbit.com/websocket/v1");
+  // //업비트 웹소켓//
+  // useEffect(() => {
+  //   // WebSocket 연결 및 실시간 업데이트
+  //   const socket = new WebSocket("wss://api.upbit.com/websocket/v1");
+  //   console.log("socket opened");
+  //   socket.onopen = () => {
+  //     // 업데이트를 원하는 티커들의 코드를 배열로 전달합니다.
+  //     socket.send(
+  //       JSON.stringify([
+  //         { ticket: "unique_ticket" },
+  //         {
+  //           type: "ticker",
+  //           codes: market.map((item) => item.market),
+  //           isOnlyRealtime: true,
+  //         },
+  //       ])
+  //     );
+  //   };
 
-    socket.onopen = () => {
-      // 업데이트를 원하는 티커들의 코드를 배열로 전달합니다.
-      socket.send(
-        JSON.stringify([
-          { ticket: "unique_ticket" },
-          {
-            type: "ticker",
-            codes: market.map((item) => item.market),
-            isOnlyRealtime: true,
-          },
-        ])
+  //   socket.onmessage = (event) => {
+  //     const reader = new FileReader();
+  //     reader.onload = () => {
+  //       const newData = JSON.parse(reader.result as string);
+
+  //       setTableData((prevData) => {
+  //         const updatedData = [...prevData];
+  //         const indexToUpdate = updatedData.findIndex(
+  //           (data) => "KRW-" + data.code === newData.code
+  //         );
+
+  //         if (indexToUpdate !== -1) {
+  //           // Check if price has updated
+  //           const priceHasUpdated =
+  //             updatedData[indexToUpdate].currentPrice !== newData.trade_price;
+
+  //           updatedData[indexToUpdate] = {
+  //             ...updatedData[indexToUpdate],
+  //             currentPrice: newData.trade_price,
+  //             signed_change_rate: newData.signed_change_rate,
+  //             tradeVolume: newData.acc_trade_price_24h,
+  //             KimchiPremium: updatedData[indexToUpdate].binancePrice
+  //               ? (newData.trade_price /
+  //                   (updatedData[indexToUpdate].binancePrice! * exchangeRate) -
+  //                   1) *
+  //                 100
+  //               : undefined,
+  //           };
+
+  //           if (priceHasUpdated) {
+  //             // Set the priceUpdated state for this item to true
+  //             setPriceUpdated((prev) => {
+  //               const newPriceUpdated = [...prev];
+  //               newPriceUpdated[indexToUpdate] = true;
+  //               return newPriceUpdated;
+  //             });
+
+  //             // After 1 second, set the priceUpdated state for this item back to false
+  //             setTimeout(() => {
+  //               setPriceUpdated((prev) => {
+  //                 const newPriceUpdated = [...prev];
+  //                 newPriceUpdated[indexToUpdate] = false;
+  //                 return newPriceUpdated;
+  //               });
+  //             }, 1000);
+
+  //             if (!sortedRef.current) {
+  //               const itemToUpdate = updatedData.splice(indexToUpdate, 1)[0];
+  //               updatedData.unshift(itemToUpdate);
+  //             }
+  //           }
+  //         }
+
+  //         return updatedData;
+  //       });
+  //     };
+  //     reader.readAsText(event.data);
+  //   };
+
+  //   return () => {
+  //     socket.close();
+  //     console.log("socket closed");
+  //   };
+  // }, [market]);
+
+// WebSocket 데이터를 테이블에 업데이트하는 함수
+  const updateTableData = (newData : upbitWebSocketResponseType) => {
+    // console.log(newData);
+    setTableData((prevData) => {
+      const updatedData = [...prevData];
+      const indexToUpdate = updatedData.findIndex(
+        (data) => "KRW-" + data.code === newData.code
       );
-    };
 
-    socket.onmessage = (event) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const newData = JSON.parse(reader.result as string);
+      if (indexToUpdate !== -1) {
+        const priceHasUpdated =
+          updatedData[indexToUpdate].currentPrice !== newData.trade_price;
 
-        setTableData((prevData) => {
-          const updatedData = [...prevData];
-          const indexToUpdate = updatedData.findIndex(
-            (data) => "KRW-" + data.code === newData.code
+        updatedData[indexToUpdate] = {
+          ...updatedData[indexToUpdate],
+          currentPrice: newData.trade_price,
+          signed_change_rate: newData.signed_change_rate,
+          tradeVolume: newData.acc_trade_price_24h,
+          KimchiPremium: updatedData[indexToUpdate].binancePrice
+            ? (newData.trade_price /
+                (updatedData[indexToUpdate].binancePrice! * exchangeRate) - 1) *
+              100
+            : undefined,
+        };
+      }
+
+      return updatedData;
+    });
+  };
+
+  // Use the custom WebSocket hook
+  useWebSocket("wss://api.upbit.com/websocket/v1", market, updateTableData);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch("/api/upbit");
+        const data = await response.json();
+        const { krwMarkets, tickerData } = data;
+        let tableDataArr: tableData[] = [];
+
+        tickerData.forEach((data: any) => {
+          let marketData = krwMarkets.find(
+            (market: any) => market.market === data.market
           );
 
-          if (indexToUpdate !== -1) {
-            // Check if price has updated
-            const priceHasUpdated =
-              updatedData[indexToUpdate].currentPrice !== newData.trade_price;
-
-            updatedData[indexToUpdate] = {
-              ...updatedData[indexToUpdate],
-              currentPrice: newData.trade_price,
-              signed_change_rate: newData.signed_change_rate,
-              tradeVolume: newData.acc_trade_price_24h,
-              KimchiPremium: updatedData[indexToUpdate].binancePrice
-                ? (newData.trade_price /
-                    (updatedData[indexToUpdate].binancePrice! * exchangeRate) -
-                    1) *
-                  100
-                : undefined,
+          if (marketData) {
+            let newData: tableData = {
+              name: marketData.korean_name,
+              code: data.market.split("-")[1],
+              currentPrice: data.trade_price,
+              signed_change_rate: data.signed_change_rate,
+              tradeVolume: data.acc_trade_price_24h,
+              prev_closing_price: data.prev_closing_price,
             };
 
-            if (priceHasUpdated) {
-              // Set the priceUpdated state for this item to true
-              setPriceUpdated((prev) => {
-                const newPriceUpdated = [...prev];
-                newPriceUpdated[indexToUpdate] = true;
-                return newPriceUpdated;
-              });
-
-              // After 1 second, set the priceUpdated state for this item back to false
-              setTimeout(() => {
-                setPriceUpdated((prev) => {
-                  const newPriceUpdated = [...prev];
-                  newPriceUpdated[indexToUpdate] = false;
-                  return newPriceUpdated;
-                });
-              }, 1000);
-
-              if (!sortedRef.current) {
-                const itemToUpdate = updatedData.splice(indexToUpdate, 1)[0];
-                updatedData.unshift(itemToUpdate);
-              }
-            }
+            tableDataArr.push(newData);
           }
-
-          return updatedData;
         });
-      };
-      reader.readAsText(event.data);
+
+        setTableData(tableDataArr);
+        setMarket(krwMarkets);
+      } catch (error) {
+        console.error(error);
+      }
     };
 
-    return () => {
-      socket.close();
-      console.log("socket closed");
-    };
-  }, [market]);
+    fetchData();
+  }, []);
 
   // 정렬 기능
   const sortData = (field: keyof tableData) => {
